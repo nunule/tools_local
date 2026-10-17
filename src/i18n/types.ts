@@ -26,6 +26,7 @@ export interface Translations {
     langToggle: string;
     success: string;
     error: string;
+    saveError: string;
   };
   nav: {
     watermark: string;
@@ -312,5 +313,60 @@ export interface Translations {
     parseError: string;
     invalidFile: string;
     mustBeObject: string;
+  };
+  sidebar: {
+    tools: string;
+    filterPlaceholder: string;
+    noResults: string;
+    collapse: string;
+    expand: string;
+    home: string;
+    allTools: string;
+    favorites: string;
+    history: string;
+    downloadDesktop: string;
+    downloadDesktopDesc: string;
+    settings: string;
+    runsLocally: string;
+    runsLocallyDesc: string;
+    categories: {
+      imagePrivacy: string;
+      configDev: string;
+      batch2Upcoming: string;
+    };
+    upcomingTools: {
+      barcodeMask: string;
+      barcodeMaskDesc: string;
+      aiSensitive: string;
+      aiSensitiveDesc: string;
+      pdfRedact: string;
+      pdfRedactDesc: string;
+      batchDesensitize: string;
+      batchDesensitizeDesc: string;
+      fileAnonymize: string;
+      fileAnonymizeDesc: string;
+    };
+  };
+  desktopDownload: {
+    title: string;
+    subtitle: string;
+    pwaTitle: string;
+    pwaDesc: string;
+    pwaBtn: string;
+    pwaInstalled: string;
+    macTitle: string;
+    macDesc: string;
+    macBtn: string;
+    winTitle: string;
+    winDesc: string;
+    winBtn: string;
+    linuxTitle: string;
+    linuxDesc: string;
+    linuxBtn: string;
+    standaloneTitle: string;
+    standaloneDesc: string;
+    standaloneBtn: string;
+    standaloneGenerating: string;
+    close: string;
   };
 }

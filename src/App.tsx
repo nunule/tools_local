@@ -11,8 +11,10 @@ import { RedactStudioView } from '@/components/redact/RedactStudioView';
 import { ExifCleanerView } from '@/components/exif/ExifCleanerView';
 import { ScreenshotStudioView } from '@/components/screenshot/ScreenshotStudioView';
 import { IDCopyStudioView } from '@/components/idcopy/IDCopyStudioView';
+import { DesktopDownloadModal } from '@/components/desktop/DesktopDownloadModal';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { exportSingleImage } from '@/utils/batchExporter';
+import { isDesktopApp } from '@/platform/files';
 
 export const App: React.FC = () => {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -22,8 +24,11 @@ export const App: React.FC = () => {
     theme, 
     images, 
     activeImageId, 
-    config 
+    config,
+    desktopModalOpen,
+    setDesktopModalOpen 
   } = useWatermarkStore();
+  const showDesktopFrame = desktopFrame && !isDesktopApp();
 
   // Sync dark class on mount and theme change
   useEffect(() => {
@@ -58,15 +63,15 @@ export const App: React.FC = () => {
   }, [images, activeImageId, config, activeTab]);
 
   return (
-    <div className={`w-screen h-screen flex flex-col overflow-hidden bg-background text-foreground ${desktopFrame ? 'p-2 sm:p-4 bg-slate-900/90' : ''}`}>
+    <div className={`w-screen h-screen flex flex-col overflow-hidden bg-background text-foreground ${showDesktopFrame ? 'p-2 sm:p-4 bg-slate-900/90' : ''}`}>
       {/* PC Desktop Window Shell (if enabled) */}
       <div className={`w-full h-full flex flex-col overflow-hidden bg-background ${
-        desktopFrame 
+        showDesktopFrame
           ? 'rounded-xl border border-slate-700/80 shadow-2xl ring-1 ring-white/10' 
           : ''
       }`}>
         {/* Desktop Titlebar (Traffic lights macOS style) */}
-        {desktopFrame && (
+        {showDesktopFrame && (
           <div className="h-8 bg-card border-b border-border/80 px-3 flex items-center justify-between select-none shrink-0">
             <div className="flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-red-500/90 border border-red-600 shadow-xs" />
@@ -74,7 +79,7 @@ export const App: React.FC = () => {
               <span className="w-3 h-3 rounded-full bg-emerald-500/90 border border-emerald-600 shadow-xs" />
             </div>
             <div className="text-xs font-medium text-muted-foreground font-mono">
-              tools local — Desktop Offline
+              tools local
             </div>
             <div className="w-12" />
           </div>
@@ -115,6 +120,9 @@ export const App: React.FC = () => {
 
       {/* Keyboard Shortcuts Dialog */}
       <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+
+      {/* Desktop App Download & Install Dialog */}
+      <DesktopDownloadModal isOpen={desktopModalOpen} onClose={() => setDesktopModalOpen(false)} />
     </div>
   );
 };

@@ -7,6 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
+    "tauri": "tauri",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build",
+    "desktop:build:mac": "tauri build --bundles app,dmg",
+    "desktop:build:win": "tauri build --bundles nsis",
+    "desktop:icons": "tauri icon public/icon.svg --output src-tauri/icons",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test"
@@ -14,6 +20,11 @@
   "dependencies": {
     "@codemirror/lang-json": "^6.0.1",
     "@codemirror/theme-one-dark": "^6.1.2",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/plus-jakarta-sans": "^5.3.0",
+    "@tauri-apps/api": "^2.12.4",
+    "@tauri-apps/plugin-dialog": "^2.8.3",
+    "@tauri-apps/plugin-fs": "^2.7.1",
     "@uiw/react-codemirror": "^4.23.8",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
@@ -29,6 +40,7 @@
   "devDependencies": {
     "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.0.9",
+    "@tauri-apps/cli": "^2.12.3",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@types/canvas-confetti": "^1.9.0",

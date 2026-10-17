@@ -2,19 +2,22 @@ import JSZip from 'jszip';
 import confetti from 'canvas-confetti';
 import { ImageItem, WatermarkConfig } from '@/types/watermark';
 import { renderWatermarkedImage, canvasToBlob } from '@/utils/watermarkRenderer';
+import { saveBlob } from '@/platform/files';
+import { useI18nStore } from '@/i18n';
+import { en } from '@/i18n/locales/en';
+import { zh } from '@/i18n/locales/zh';
 
 /**
- * Trigger browser file download from Blob
+ * Save an export using the native dialog on desktop, or a download in the browser.
  */
-export function triggerDownload(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
+export async function triggerDownload(blob: Blob, filename: string): Promise<boolean> {
+  try {
+    return await saveBlob(blob, filename);
+  } catch {
+    const messages = useI18nStore.getState().language === 'zh' ? zh : en;
+    alert(messages.common.saveError);
+    return false;
+  }
 }
 
 /**
@@ -68,7 +71,7 @@ export async function exportSingleImage(
   const blob = await canvasToBlob(canvas, config.exportFormat, config.exportQuality);
   const filename = getExportFilename(imageItem.name, config.filenamePattern, config.exportFormat);
   
-  triggerDownload(blob, filename);
+  if (!await triggerDownload(blob, filename)) return;
 
   // Joyful confetti celebration
   confetti({
@@ -119,7 +122,7 @@ export async function exportAllImagesAsZip(
     });
 
     const zipFilename = `tools_local_watermarked_${Date.now()}.zip`;
-    triggerDownload(zipBlob, zipFilename);
+    if (!await triggerDownload(zipBlob, zipFilename)) return;
 
     confetti({
       particleCount: 100,

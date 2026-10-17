@@ -100,6 +100,20 @@ Full English and Simplified Chinese localization is supported out-of-the-box:
 
 ---
 
+## 🖥️ Desktop application
+
+The app supports Tauri 2 desktop builds for macOS and Windows, with native Save As dialogs and bundled fonts.
+
+```bash
+npm run desktop:dev                   # Start the native application
+npm run desktop:build:mac -- --ci      # macOS .app and .dmg (run on a Mac)
+npm run desktop:build:win -- --ci      # Windows setup.exe (run on Windows)
+```
+
+Install Rust and the platform build tools first. See the [desktop build guide](docs/desktop.md) for prerequisites, output paths, CI builds and signing. Test builds are not signed for public distribution.
+
+---
+
 ## 💻 Development & Build
 
 ### Prerequisites

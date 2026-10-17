@@ -12,6 +12,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
+import { triggerDownload } from '@/utils/batchExporter';
 import { Button } from '@/components/ui/button';
 import { WatermarkConfig } from '@/types/watermark';
 import { useI18n } from '@/i18n';
@@ -50,14 +51,9 @@ export const CodeMirrorConfigView: React.FC = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const blob = new Blob([jsonText], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `watermark_config_${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    await triggerDownload(blob, `watermark_config_${Date.now()}.json`);
   };
 
   const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {

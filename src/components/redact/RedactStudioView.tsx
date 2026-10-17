@@ -273,11 +273,10 @@ export const RedactStudioView: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.toBlob((blob) => {
+    canvas.toBlob(async (blob) => {
       if (blob) {
-        const ext = imageName.split('.').pop() || 'png';
         const rawName = imageName.replace(/\.[^/.]+$/, '');
-        triggerDownload(blob, `${rawName}_redacted.${ext}`);
+        if (!await triggerDownload(blob, `${rawName}_redacted.png`)) return;
         confetti({ particleCount: 50, spread: 60 });
       }
     }, 'image/png');

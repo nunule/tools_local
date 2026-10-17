@@ -168,9 +168,9 @@ export const IDCopyStudioView: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.toBlob((blob) => {
+    canvas.toBlob(async (blob) => {
       if (blob) {
-        triggerDownload(blob, `safe_id_certified_copy_${Date.now()}.png`);
+        if (!await triggerDownload(blob, `safe_id_certified_copy_${Date.now()}.png`)) return;
         confetti({ particleCount: 60, spread: 70 });
       }
     }, 'image/png');

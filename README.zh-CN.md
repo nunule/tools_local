@@ -101,6 +101,20 @@
 
 ---
 
+## 🖥️ 桌面应用
+
+通过 Tauri 2 打包 macOS 和 Windows 桌面版，支持系统“另存为”窗口，并内置离线字体。
+
+```bash
+npm run desktop:dev                   # 启动桌面应用
+npm run desktop:build:mac -- --ci      # Mac 上生成 .app 和 .dmg
+npm run desktop:build:win -- --ci      # Windows 上生成 setup.exe
+```
+
+需先安装 Rust 和对应平台的编译工具。详见[桌面构建指南](docs/desktop.md)，包含环境要求、产物路径、GitHub Actions 和签名说明。测试构建尚未进行面向公开分发的开发者签名与公证。
+
+---
+
 ## 💻 本地开发与构建
 
 ### 环境要求

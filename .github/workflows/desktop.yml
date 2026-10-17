@@ -1,0 +1,50 @@
+name: Desktop installers
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'desktop-v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            script: desktop:build:mac
+            artifact: macos
+            files: |
+              src-tauri/target/release/bundle/dmg/*.dmg
+          - os: windows-latest
+            script: desktop:build:win
+            artifact: windows
+            files: |
+              src-tauri/target/release/bundle/nsis/*-setup.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install dependencies
+        run: npm ci
+      - name: Test frontend
+        run: npm test
+      - name: Build installer
+        run: npm run ${{ matrix.script }} -- --ci
+      - name: Upload installer
+        uses: actions/upload-artifact@v7
+        with:
+          name: tools-local-${{ matrix.artifact }}-${{ runner.arch }}
+          path: ${{ matrix.files }}
+          if-no-files-found: error
+          retention-days: 14

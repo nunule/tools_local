@@ -154,7 +154,7 @@ export const ExifCleanerView: React.FC = () => {
       setCleanedBlob(cleanBlob);
 
       const cleanFileName = (photoFile?.name || report?.fileName || 'photo.jpg').replace(/\.[^/.]+$/, '_clean.jpg');
-      triggerDownload(cleanBlob, cleanFileName);
+      if (!await triggerDownload(cleanBlob, cleanFileName)) return;
 
       confetti({ particleCount: 50, spread: 60 });
     } catch (err) {
@@ -194,7 +194,7 @@ export const ExifCleanerView: React.FC = () => {
         setBatchProgress(Math.round(90 + (meta.percent / 100) * 10));
       });
 
-      triggerDownload(zipBlob, `photos_exif_cleaned_${Date.now()}.zip`);
+      if (!await triggerDownload(zipBlob, `photos_exif_cleaned_${Date.now()}.zip`)) return;
       confetti({ particleCount: 80, spread: 70 });
     } catch (err) {
       alert(language === 'zh' ? '批量处理出错' : 'Error in batch processing');

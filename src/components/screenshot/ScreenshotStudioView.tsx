@@ -254,10 +254,10 @@ export const ScreenshotStudioView: React.FC = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    canvas.toBlob((blob) => {
+    canvas.toBlob(async (blob) => {
       if (blob) {
         const rawName = fileName.replace(/\.[^/.]+$/, '');
-        triggerDownload(blob, `${rawName}_trimmed.png`);
+        if (!await triggerDownload(blob, `${rawName}_trimmed.png`)) return;
         confetti({ particleCount: 50, spread: 60 });
       }
     }, 'image/png');

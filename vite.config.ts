@@ -5,6 +5,7 @@ import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
+  clearScreen: false,
   plugins: [
     react(),
     tailwindcss()
@@ -16,7 +17,9 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    host: true
+    host: true,
+    strictPort: true,
+    watch: { ignored: ['**/src-tauri/**'] }
   },
   build: {
     rollupOptions: {

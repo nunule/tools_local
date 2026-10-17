@@ -47,6 +47,8 @@ interface WatermarkStoreState {
   setTheme: (theme: 'dark' | 'light') => void;
   desktopFrame: boolean;
   setDesktopFrame: (val: boolean) => void;
+  desktopModalOpen: boolean;
+  setDesktopModalOpen: (open: boolean) => void;
 
   // Batch status
   isExportingBatch: boolean;
@@ -227,6 +229,8 @@ export const useWatermarkStore = create<WatermarkStoreState>()(
       },
       desktopFrame: false,
       setDesktopFrame: (desktopFrame) => set({ desktopFrame }),
+      desktopModalOpen: false,
+      setDesktopModalOpen: (desktopModalOpen) => set({ desktopModalOpen }),
 
       isExportingBatch: false,
       batchProgress: 0,

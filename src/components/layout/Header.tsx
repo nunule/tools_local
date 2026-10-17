@@ -13,7 +13,8 @@ import {
   Camera,
   Crop,
   CreditCard,
-  Languages
+  Languages,
+  Download
 } from 'lucide-react';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { ActiveToolTab } from '@/types/privacyTools';
 import { BrandIcon } from '@/components/brand/BrandIcon';
 import { useI18n } from '@/i18n';
+import { isDesktopApp } from '@/platform/files';
 
 interface HeaderProps {
   onOpenShortcuts: () => void;
@@ -37,7 +39,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
     sidebarOpen,
     setSidebarOpen,
     loadSampleImage,
-    images
+    images,
+    setDesktopModalOpen
   } = useWatermarkStore();
 
   const { language, toggleLanguage, t } = useI18n();
@@ -152,6 +155,18 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
           </Button>
         )}
 
+        {/* Download Desktop App Button */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setDesktopModalOpen(true)}
+          title={t.sidebar.downloadDesktop}
+          className="h-8 text-xs gap-1.5 hidden lg:inline-flex text-teal-600 dark:text-teal-400 border-teal-500/30 hover:bg-teal-500/10 shadow-xs font-medium"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>{t.sidebar.downloadDesktop}</span>
+        </Button>
+
         {/* Language Switcher */}
         <Button
           variant="ghost"
@@ -174,15 +189,17 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
           <Keyboard className="w-4 h-4" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setDesktopFrame(!desktopFrame)}
-          title={t.common.desktopToggle}
-          className={`h-8 w-8 ${desktopFrame ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-        >
-          <AppWindow className="w-4 h-4" />
-        </Button>
+        {!isDesktopApp() && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setDesktopFrame(!desktopFrame)}
+            title={t.common.desktopToggle}
+            className={`h-8 w-8 ${desktopFrame ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            <AppWindow className="w-4 h-4" />
+          </Button>
+        )}
 
         <Button
           variant="ghost"
