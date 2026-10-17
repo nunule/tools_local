@@ -176,7 +176,7 @@ export const useWatermarkStore = create<WatermarkStoreState>()(
           ctx.fillStyle = '#ffffff';
           ctx.font = '700 42px -apple-system, sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText('Toolbit 本地安全水印工作台', 600, 360);
+          ctx.fillText('tools local 本地安全水印', 600, 360);
 
           ctx.fillStyle = '#94a3b8';
           ctx.font = '400 22px -apple-system, sans-serif';
@@ -234,7 +234,7 @@ export const useWatermarkStore = create<WatermarkStoreState>()(
         set({ isExportingBatch, batchProgress: progress }),
     }),
     {
-      name: 'toolbit-watermark-storage',
+      name: 'tools-local-watermark-storage',
       partialize: (state) => ({
         config: state.config,
         theme: state.theme,

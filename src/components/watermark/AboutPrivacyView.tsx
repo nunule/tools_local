@@ -26,7 +26,7 @@ export const AboutPrivacyView: React.FC = () => {
               <span>零服务器交互 · 100% 本地端运行</span>
             </Badge>
             <Badge variant="outline" className="font-mono text-xs">
-              Toolbit Core Standards
+              tools local Architecture
             </Badge>
           </div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-foreground tracking-tight">

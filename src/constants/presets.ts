@@ -89,7 +89,7 @@ export const WATERMARK_PRESETS: WatermarkPreset[] = [
     description: '摄影照片与自媒体展示常用的经典右下角半透明水印',
     category: 'creative',
     config: {
-      text: '© LocalBit Studio · {{date}}',
+      text: '© tools local · {{date}}',
       mode: 'single',
       position: 'bottom-right',
       fontSize: 22,

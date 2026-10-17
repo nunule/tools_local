@@ -5,7 +5,7 @@ test.describe('Local Image Watermark Studio E2E', () => {
     await page.goto('/');
 
     // Verify title and local privacy badge
-    await expect(page).toHaveTitle(/Toolbit/);
+    await expect(page).toHaveTitle(/tools local/);
     await expect(page.getByText('100% 本地离线')).toBeVisible();
 
     // Click sample image loader

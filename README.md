@@ -1,6 +1,6 @@
-# Toolbit 本地图片水印工作室 (Local-First Image Watermark Studio)
+# tools local — 本地图片水印工作室 (Local Image Watermark Studio)
 
-参考 [Toolbit.app](https://toolbit.app/) 纯本地化、零上传、注重隐私的现代开发者与设计师工具风格打造的高性能图片水印处理工作台。
+专为注重隐私、零网络上传打造的高性能端侧本地图片水印处理工作台。
 
 ---
 

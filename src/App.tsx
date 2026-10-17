@@ -73,7 +73,7 @@ export const App: React.FC = () => {
               <span className="w-3 h-3 rounded-full bg-emerald-500/90 border border-emerald-600 shadow-xs" />
             </div>
             <div className="text-xs font-medium text-muted-foreground font-mono">
-              Toolbit Watermark Studio — Desktop Offline
+              tools local — Desktop Offline
             </div>
             <div className="w-12" />
           </div>

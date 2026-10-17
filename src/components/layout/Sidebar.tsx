@@ -178,7 +178,7 @@ export const Sidebar: React.FC = () => {
       {/* Footer Info */}
       <div className="p-3 border-t border-border bg-card/80">
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-          <span>Toolbit Local Suite</span>
+          <span className="font-mono font-medium">tools local</span>
           <span className="font-mono">v1.0.0</span>
         </div>
       </div>

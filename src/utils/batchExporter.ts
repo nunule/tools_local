@@ -118,7 +118,7 @@ export async function exportAllImagesAsZip(
       onProgress?.(true, zipProgress);
     });
 
-    const zipFilename = `toolbit_watermarked_${Date.now()}.zip`;
+    const zipFilename = `tools_local_watermarked_${Date.now()}.zip`;
     triggerDownload(zipBlob, zipFilename);
 
     confetti({

@@ -54,13 +54,29 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
         </Button>
 
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-sky-500/20">
-            <Sparkles className="w-4 h-4" />
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 p-[1.5px] shadow-md shadow-teal-500/25">
+            <div className="w-full h-full rounded-[6.5px] bg-card flex items-center justify-center">
+              <svg 
+                className="w-4.5 h-4.5 text-teal-500 dark:text-teal-400" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <rect width="18" height="18" x="3" y="3" rx="3.5" />
+                <path d="M7 7h5" />
+                <path d="M7 11h10" />
+                <path d="m14 15 3 3" />
+                <circle cx="14" cy="15" r="2" />
+              </svg>
+            </div>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-sm tracking-tight text-foreground">
-                Toolbit <span className="font-mono text-xs font-normal text-primary">Watermark</span>
+              <span className="font-bold text-sm tracking-tight text-foreground font-mono">
+                tools <span className="text-teal-500 dark:text-teal-400 font-semibold">local</span>
               </span>
               <Badge variant="success" className="hidden sm:inline-flex text-[10px] py-0 px-1.5 h-4.5 gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />

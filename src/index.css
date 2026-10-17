@@ -57,7 +57,7 @@
   }
 }
 
-/* Custom scrollbars matching Toolbit */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
