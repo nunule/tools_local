@@ -17,6 +17,7 @@ import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ActiveToolTab } from '@/types/privacyTools';
+import { BrandIcon } from '@/components/brand/BrandIcon';
 
 export const Sidebar: React.FC = () => {
   const { 
@@ -205,7 +206,10 @@ export const Sidebar: React.FC = () => {
       {/* Footer Info */}
       <div className="p-3 border-t border-border bg-card/80">
         <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-          <span className="font-mono font-medium">tools local</span>
+          <div className="flex items-center gap-1.5">
+            <BrandIcon className="h-3.5 w-3.5 rounded" />
+            <span className="font-mono font-medium text-foreground/90">tools local</span>
+          </div>
           <span className="font-mono">v1.1.0</span>
         </div>
       </div>
