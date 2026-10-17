@@ -1,21 +1,23 @@
 import React from 'react';
 import { 
-  ShieldCheck, 
   Sparkles, 
   Sun, 
   Moon, 
   Keyboard, 
   AppWindow, 
   Code, 
-  Layers, 
   Info,
   Menu,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Paintbrush,
+  Camera,
+  Crop,
+  CreditCard
 } from 'lucide-react';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ActiveToolTab } from '@/types/watermark';
+import { ActiveToolTab } from '@/types/privacyTools';
 
 interface HeaderProps {
   onOpenShortcuts: () => void;
@@ -39,6 +41,14 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
+  const navTools: { id: ActiveToolTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'watermark', label: '图片水印', icon: <ImageIcon className="w-3.5 h-3.5" /> },
+    { id: 'redact', label: '隐私遮挡', icon: <Paintbrush className="w-3.5 h-3.5" /> },
+    { id: 'exif', label: '照片清理', icon: <Camera className="w-3.5 h-3.5" /> },
+    { id: 'screenshot', label: '截图隐私', icon: <Crop className="w-3.5 h-3.5" /> },
+    { id: 'id-copy', label: '证件副本', icon: <CreditCard className="w-3.5 h-3.5" /> },
+  ];
+
   return (
     <header className="h-14 border-b border-border bg-card/80 backdrop-blur-md px-4 flex items-center justify-between z-30 select-none shrink-0">
       {/* Left: Brand & Sidebar toggle */}
@@ -54,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
         </Button>
 
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 p-[1.5px] shadow-md shadow-teal-500/25">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-teal-500 via-emerald-500 to-cyan-500 p-[1.5px] shadow-md shadow-teal-500/25 shrink-0">
             <div className="w-full h-full rounded-[6.5px] bg-card flex items-center justify-center">
               <svg 
                 className="w-4.5 h-4.5 text-teal-500 dark:text-teal-400" 
@@ -83,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
                 100% 本地离线
               </Badge>
             </div>
-            <p className="text-[11px] text-muted-foreground hidden md:block">
+            <p className="text-[11px] text-muted-foreground hidden xl:block">
               浏览器端纯本地图像处理 · 零上传 · 隐私安全
             </p>
           </div>
@@ -91,57 +101,64 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
       </div>
 
       {/* Center: Tool Navigation Tabs */}
-      <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60">
-        <button
-          onClick={() => setActiveTab('watermark')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
-            activeTab === 'watermark'
-              ? 'bg-card text-foreground shadow-sm'
-              : 'text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <ImageIcon className="w-3.5 h-3.5" />
-          <span>水印工作台</span>
-          {images.length > 0 && (
-            <span className="w-4 h-4 text-[10px] rounded-full bg-primary/20 text-primary flex items-center justify-center font-mono">
-              {images.length}
-            </span>
-          )}
-        </button>
+      <div className="flex items-center bg-muted/60 p-1 rounded-lg border border-border/60 overflow-x-auto no-scrollbar">
+        {navTools.map((tool) => (
+          <button
+            key={tool.id}
+            onClick={() => setActiveTab(tool.id)}
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all whitespace-nowrap ${
+              activeTab === tool.id
+                ? 'bg-card text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {tool.icon}
+            <span>{tool.label}</span>
+            {tool.id === 'watermark' && images.length > 0 && (
+              <span className="w-4 h-4 text-[10px] rounded-full bg-primary/20 text-primary flex items-center justify-center font-mono">
+                {images.length}
+              </span>
+            )}
+          </button>
+        ))}
+
+        <div className="w-[1px] h-4 bg-border/60 mx-1 hidden sm:block" />
 
         <button
           onClick={() => setActiveTab('json-config')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+          className={`hidden sm:flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all ${
             activeTab === 'json-config'
               ? 'bg-card text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
           }`}
+          title="CodeMirror 6 JSON 配置"
         >
           <Code className="w-3.5 h-3.5" />
-          <span>JSON 配置 (CodeMirror)</span>
+          <span>配置</span>
         </button>
 
         <button
           onClick={() => setActiveTab('about')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+          className={`hidden sm:flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all ${
             activeTab === 'about'
               ? 'bg-card text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
           }`}
+          title="隐私与离线架构"
         >
           <Info className="w-3.5 h-3.5" />
-          <span>离线安全说明</span>
+          <span>说明</span>
         </button>
       </div>
 
       {/* Right Actions */}
-      <div className="flex items-center gap-1.5">
-        {images.length === 0 && (
+      <div className="flex items-center gap-1.5 shrink-0">
+        {activeTab === 'watermark' && images.length === 0 && (
           <Button
             variant="outline"
             size="sm"
             onClick={loadSampleImage}
-            className="text-xs h-8 gap-1.5 text-sky-500 dark:text-sky-400 border-sky-500/30 hover:bg-sky-500/10"
+            className="text-xs h-8 gap-1.5 text-teal-500 border-teal-500/30 hover:bg-teal-500/10 hidden md:inline-flex"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>加载样例图</span>

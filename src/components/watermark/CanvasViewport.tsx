@@ -8,9 +8,7 @@ import {
   Grid, 
   Upload, 
   Sparkles, 
-  ShieldCheck, 
   Download,
-  Layers,
   FileImage,
   Move
 } from 'lucide-react';
@@ -263,14 +261,14 @@ export const CanvasViewport: React.FC = () => {
       >
         <div className="max-w-xl w-full border-2 border-dashed border-border/80 hover:border-primary/60 transition-all rounded-2xl p-10 flex flex-col items-center justify-center text-center bg-card/40 backdrop-blur-sm shadow-xl">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4 shadow-inner">
-            <Upload className="w-8 h-8 animate-bounce" />
+            <Upload className="w-8 h-8" />
           </div>
 
           <h3 className="text-lg font-bold text-foreground mb-1">
-            拖拽图片到这里，或点击上传
+            拖入图片，开始添加水印
           </h3>
           <p className="text-xs text-muted-foreground mb-6 max-w-sm">
-            支持 PNG、JPG、WebP、GIF 等格式，支持多张批量添加与剪贴板 (Cmd/Ctrl + V) 直接粘贴
+            支持 PNG、JPG、WebP、GIF，可多选或使用 Cmd/Ctrl + V 粘贴。
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
@@ -295,42 +293,10 @@ export const CanvasViewport: React.FC = () => {
               className="gap-2 border-primary/30 hover:bg-primary/10 text-primary"
             >
               <Sparkles className="w-4 h-4" />
-              一键试用样例图
+              使用示例图
             </Button>
           </div>
 
-          {/* Privacy reassurance cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full mt-8 pt-6 border-t border-border/60 text-left">
-            <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-500 mb-1">
-                <ShieldCheck className="w-4 h-4" />
-                <span>零数据上传</span>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                图片全程在浏览器端渲染，绝不发送给任何后端
-              </p>
-            </div>
-
-            <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-sky-500 mb-1">
-                <Layers className="w-4 h-4" />
-                <span>批量快速渲染</span>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                一套水印配置一键应用多图，打包 ZIP 下载
-              </p>
-            </div>
-
-            <div className="p-2.5 rounded-lg bg-muted/40 border border-border/40">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-indigo-500 mb-1">
-                <Sparkles className="w-4 h-4" />
-                <span>高密防伪平铺</span>
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                白色半透明、交错排列与阴影描边，防止任何恶意篡改
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     );

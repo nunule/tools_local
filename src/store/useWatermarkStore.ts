@@ -176,11 +176,11 @@ export const useWatermarkStore = create<WatermarkStoreState>()(
           ctx.fillStyle = '#ffffff';
           ctx.font = '700 42px -apple-system, sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText('tools local 本地安全水印', 600, 360);
+          ctx.fillText('tools local', 600, 360);
 
           ctx.fillStyle = '#94a3b8';
           ctx.font = '400 22px -apple-system, sans-serif';
-          ctx.fillText('端侧浏览器离线渲染 · 零服务器交互 · 证件及业务隐私保全', 600, 420);
+          ctx.fillText('图片水印示例', 600, 420);
 
           ctx.fillStyle = 'rgba(56, 189, 248, 0.9)';
           ctx.font = '600 18px monospace';

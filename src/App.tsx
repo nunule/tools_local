@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Route, Switch, useLocation } from 'wouter';
 import { Header } from '@/components/layout/Header';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { CanvasViewport } from '@/components/watermark/CanvasViewport';
@@ -8,15 +7,17 @@ import { WatermarkControls } from '@/components/watermark/WatermarkControls';
 import { CodeMirrorConfigView } from '@/components/watermark/CodeMirrorConfigView';
 import { AboutPrivacyView } from '@/components/watermark/AboutPrivacyView';
 import { ShortcutsModal } from '@/components/watermark/ShortcutsModal';
+import { RedactStudioView } from '@/components/redact/RedactStudioView';
+import { ExifCleanerView } from '@/components/exif/ExifCleanerView';
+import { ScreenshotStudioView } from '@/components/screenshot/ScreenshotStudioView';
+import { IDCopyStudioView } from '@/components/idcopy/IDCopyStudioView';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { exportSingleImage } from '@/utils/batchExporter';
 
 export const App: React.FC = () => {
-  const [location, setLocation] = useLocation();
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const { 
     activeTab, 
-    setActiveTab, 
     desktopFrame, 
     theme, 
     images, 
@@ -41,7 +42,7 @@ export const App: React.FC = () => {
       if (isCmdOrCtrl && e.key.toLowerCase() === 's') {
         e.preventDefault();
         const activeImg = images.find((i) => i.id === activeImageId);
-        if (activeImg) {
+        if (activeImg && activeTab === 'watermark') {
           exportSingleImage(activeImg, config);
         }
       }
@@ -54,7 +55,7 @@ export const App: React.FC = () => {
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [images, activeImageId, config]);
+  }, [images, activeImageId, config, activeTab]);
 
   return (
     <div className={`w-screen h-screen flex flex-col overflow-hidden bg-background text-foreground ${desktopFrame ? 'p-2 sm:p-4 bg-slate-900/90' : ''}`}>
@@ -102,6 +103,10 @@ export const App: React.FC = () => {
               </div>
             )}
 
+            {activeTab === 'redact' && <RedactStudioView />}
+            {activeTab === 'exif' && <ExifCleanerView />}
+            {activeTab === 'screenshot' && <ScreenshotStudioView />}
+            {activeTab === 'id-copy' && <IDCopyStudioView />}
             {activeTab === 'json-config' && <CodeMirrorConfigView />}
             {activeTab === 'about' && <AboutPrivacyView />}
           </main>

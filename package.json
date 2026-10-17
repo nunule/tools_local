@@ -1,5 +1,5 @@
 {
-  "name": "tools-with-local",
+  "name": "tools-local",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -17,6 +17,7 @@
     "@uiw/react-codemirror": "^4.23.8",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
+    "exifr": "^7.1.3",
     "jszip": "^3.10.1",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",

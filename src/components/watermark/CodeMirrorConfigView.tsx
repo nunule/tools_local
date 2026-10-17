@@ -7,14 +7,12 @@ import {
   Check, 
   Upload, 
   Download, 
-  RotateCcw, 
   Play, 
   FileCode2,
   AlertCircle
 } from 'lucide-react';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { WatermarkConfig } from '@/types/watermark';
 
 export const CodeMirrorConfigView: React.FC = () => {
@@ -37,7 +35,7 @@ export const CodeMirrorConfigView: React.FC = () => {
         throw new Error('配置必须是一个有效的 JSON 对象');
       }
       updateConfig(parsed);
-      setSuccessMsg('配置已成功同步应用到水印工作室！');
+      setSuccessMsg('配置已应用');
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
       setError(err.message || 'JSON 解析错误，请检查语法');
@@ -86,11 +84,8 @@ export const CodeMirrorConfigView: React.FC = () => {
         <div className="flex items-center gap-2">
           <FileCode2 className="w-4 h-4 text-indigo-400" />
           <span className="text-xs font-semibold text-foreground">
-            CodeMirror 6 JSON 水印配置与脚本
+            JSON 配置
           </span>
-          <Badge variant="outline" className="text-[10px] font-mono py-0">
-            JSON Schema v1.0
-          </Badge>
         </div>
 
         <div className="flex items-center gap-2">
@@ -168,8 +163,7 @@ export const CodeMirrorConfigView: React.FC = () => {
 
       {/* Bottom Footer hint */}
       <div className="h-8 border-t border-border bg-muted/20 px-4 flex items-center justify-between text-[11px] text-muted-foreground select-none">
-        <span>支持直接修改配置参数并点击「应用到画布」立即生效</span>
-        <span className="font-mono">CodeMirror 6 · React 19 Binding</span>
+        <span>修改参数后，点击「应用到画布」。</span>
       </div>
     </div>
   );

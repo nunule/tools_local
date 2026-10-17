@@ -94,4 +94,11 @@ export interface ImageItem {
   error?: string;
 }
 
-export type ActiveToolTab = 'watermark' | 'json-config' | 'batch-overview' | 'about';
+export type ActiveToolTab = 
+  | 'watermark' 
+  | 'redact' 
+  | 'exif' 
+  | 'screenshot' 
+  | 'id-copy' 
+  | 'json-config' 
+  | 'about';
