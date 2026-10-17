@@ -3,22 +3,19 @@ import {
   Crop, 
   Smartphone, 
   Globe, 
-  UserX, 
   Eye, 
   Download, 
   Upload, 
   Sparkles, 
-  RotateCcw,
-  Check,
-  ShieldCheck,
-  CircleDot,
-  Minus
+  RotateCcw, 
+  Minus 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { triggerDownload } from '@/utils/batchExporter';
 import { applyMosaicToRect } from '@/utils/redactRenderer';
+import { useI18n } from '@/i18n';
 import confetti from 'canvas-confetti';
 
 interface QuickMask {
@@ -31,6 +28,7 @@ interface QuickMask {
 }
 
 export const ScreenshotStudioView: React.FC = () => {
+  const { t, language } = useI18n();
   const [screenshotSrc, setScreenshotSrc] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>('screenshot.png');
   const [baseImage, setBaseImage] = useState<HTMLImageElement | null>(null);
@@ -91,7 +89,11 @@ export const ScreenshotStudioView: React.FC = () => {
     ctx.fillRect(0, 120, 1170, 140);
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 44px -apple-system, sans-serif';
-    ctx.fillText('重要客户·商务对接群 (8)', 360, 210);
+    if (language === 'en') {
+      ctx.fillText('VIP Client · Project Sync (8)', 360, 210);
+    } else {
+      ctx.fillText('重要客户·商务对接群 (8)', 360, 210);
+    }
 
     // Chat messages
     // Avatar 1
@@ -101,7 +103,11 @@ export const ScreenshotStudioView: React.FC = () => {
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 32px sans-serif';
-    ctx.fillText('李经理 (微信号: wxid_998124)', 200, 360);
+    if (language === 'en') {
+      ctx.fillText('Alex Vance (ID: alex_vance_ny)', 200, 360);
+    } else {
+      ctx.fillText('李经理 (微信号: wxid_998124)', 200, 360);
+    }
 
     // Bubble 1
     ctx.fillStyle = '#334155';
@@ -110,7 +116,11 @@ export const ScreenshotStudioView: React.FC = () => {
     ctx.fill();
     ctx.fillStyle = '#f8fafc';
     ctx.font = '36px -apple-system, sans-serif';
-    ctx.fillText('张总，这是我们新的报价单，请查收。', 240, 465);
+    if (language === 'en') {
+      ctx.fillText('Hi team, here is the new contract quotation.', 240, 465);
+    } else {
+      ctx.fillText('张总，这是我们新的报价单，请查收。', 240, 465);
+    }
 
     // Avatar 2
     ctx.fillStyle = '#a855f7';
@@ -119,7 +129,11 @@ export const ScreenshotStudioView: React.FC = () => {
     ctx.fill();
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 32px sans-serif';
-    ctx.fillText('财务总监·陈女士', 200, 580);
+    if (language === 'en') {
+      ctx.fillText('CFO · Sarah Jenkins', 200, 580);
+    } else {
+      ctx.fillText('财务总监·陈女士', 200, 580);
+    }
 
     // Bubble 2
     ctx.fillStyle = '#334155';
@@ -128,7 +142,11 @@ export const ScreenshotStudioView: React.FC = () => {
     ctx.fill();
     ctx.fillStyle = '#f8fafc';
     ctx.font = '36px -apple-system, sans-serif';
-    ctx.fillText('首笔预付款 500,000 元已汇入尾号 8829 账户。', 240, 685);
+    if (language === 'en') {
+      ctx.fillText('Initial advance payment of $50,000 has cleared.', 240, 685);
+    } else {
+      ctx.fillText('首笔预付款 500,000 元已汇入尾号 8829 账户。', 240, 685);
+    }
 
     // Bottom home bar
     ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
@@ -137,7 +155,7 @@ export const ScreenshotStudioView: React.FC = () => {
     ctx.fill();
 
     setScreenshotSrc(canvas.toDataURL('image/png'));
-    setFileName('iphone_chat_screenshot.png');
+    setFileName('mobile_chat_screenshot.png');
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -158,12 +176,11 @@ export const ScreenshotStudioView: React.FC = () => {
     if (isComparing) {
       canvas.width = baseImage.width;
       canvas.height = baseImage.height;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(baseImage, 0, 0);
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.drawImage(baseImage, 0, 0);
       return;
     }
 
-    // Effective cropped dimensions
     const cropX = trimLeft;
     const cropY = trimTop;
     const cropW = Math.max(10, baseImage.width - trimLeft - trimRight);
@@ -171,27 +188,30 @@ export const ScreenshotStudioView: React.FC = () => {
 
     canvas.width = cropW;
     canvas.height = cropH;
-    const ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-    // Draw cropped region from base image
+    // Draw cropped region from source
     ctx.drawImage(baseImage, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
-    // Draw applied quick masks
+    // Apply quick masks on cropped coordinate space
     for (const mask of masks) {
       const relX = mask.x - cropX;
       const relY = mask.y - cropY;
 
-      if (maskType === 'solid') {
+      if (maskType === 'mosaic') {
+        applyMosaicToRect(ctx, relX, relY, mask.width, mask.height, 14);
+      } else {
         ctx.fillStyle = '#0f172a';
         if (mask.type === 'avatar') {
           ctx.beginPath();
           ctx.arc(relX + mask.width / 2, relY + mask.height / 2, mask.width / 2, 0, Math.PI * 2);
           ctx.fill();
         } else {
-          ctx.fillRect(relX, relY, mask.width, mask.height);
+          ctx.beginPath();
+          ctx.roundRect(relX, relY, mask.width, mask.height, 6);
+          ctx.fill();
         }
-      } else {
-        applyMosaicToRect(ctx, relX, relY, mask.width, mask.height, 16);
       }
     }
   }, [baseImage, trimTop, trimBottom, trimLeft, trimRight, masks, maskType, isComparing]);
@@ -200,26 +220,33 @@ export const ScreenshotStudioView: React.FC = () => {
     redraw();
   }, [redraw]);
 
-  // Click on canvas to place quick mask
+  // Click on canvas to drop quick mask
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!baseImage) return;
     const canvas = canvasRef.current;
-    if (!canvas || !baseImage) return;
+    if (!canvas) return;
+
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
-    const clickedX = (e.clientX - rect.left) * scaleX + trimLeft;
-    const clickedY = (e.clientY - rect.top) * scaleY + trimTop;
+    const clickRelX = (e.clientX - rect.left) * scaleX;
+    const clickRelY = (e.clientY - rect.top) * scaleY;
 
-    // Add a quick mask item centered around click
+    // Map back to uncropped coordinates
+    const origX = clickRelX + trimLeft;
+    const origY = clickRelY + trimTop;
+
+    // Add a 100x100 circle mask or bar mask
     const newMask: QuickMask = {
       id: `mask_${Date.now()}`,
       type: 'avatar',
-      x: clickedX - 45,
-      y: clickedY - 45,
-      width: 90,
-      height: 90,
+      x: origX - 50,
+      y: origY - 50,
+      width: 100,
+      height: 100,
     };
+
     setMasks((prev) => [...prev, newMask]);
   };
 
@@ -244,11 +271,12 @@ export const ScreenshotStudioView: React.FC = () => {
         <div className="h-12 border-b border-border bg-card/80 backdrop-blur-md px-4 flex items-center justify-between z-10 shrink-0 select-none">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-foreground">
-              {baseImage ? fileName : '截图隐私处理 (裁切状态栏 / 头像打码)'}
+              {baseImage ? fileName : t.screenshot.title}
             </span>
             {baseImage && (
               <Badge variant="outline" className="text-[10px] font-mono">
-                裁切后: {Math.max(10, baseImage.width - trimLeft - trimRight)} × {Math.max(10, baseImage.height - trimTop - trimBottom)} px
+                {language === 'zh' ? '裁切后: ' : 'Cropped: '} 
+                {Math.max(10, baseImage.width - trimLeft - trimRight)} × {Math.max(10, baseImage.height - trimTop - trimBottom)} px
               </Badge>
             )}
           </div>
@@ -269,7 +297,7 @@ export const ScreenshotStudioView: React.FC = () => {
                   className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>重置裁切</span>
+                  <span>{t.screenshot.resetCrop}</span>
                 </Button>
 
                 <Button
@@ -280,7 +308,7 @@ export const ScreenshotStudioView: React.FC = () => {
                   className="h-7 text-xs gap-1"
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  <span>对比原图</span>
+                  <span>{t.common.holdToCompare}</span>
                 </Button>
 
                 <Button
@@ -290,7 +318,7 @@ export const ScreenshotStudioView: React.FC = () => {
                   className="h-7 text-xs gap-1.5 shadow-sm"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>导出裁切后截图</span>
+                  <span>{t.screenshot.exportCropped}</span>
                 </Button>
               </>
             )}
@@ -306,11 +334,11 @@ export const ScreenshotStudioView: React.FC = () => {
                   ref={canvasRef}
                   onClick={handleCanvasClick}
                   className="max-h-[75vh] w-auto object-contain cursor-pointer"
-                  title="点击可在该位置放置圆形/方形打码遮罩"
+                  title={t.screenshot.clickToMaskHint}
                 />
               </div>
               <span className="text-[11px] text-muted-foreground">
-                提示：在画面任意位置点击可快速遮挡头像或账号
+                {t.screenshot.clickToMaskHint}
               </span>
             </div>
           ) : (
@@ -319,10 +347,10 @@ export const ScreenshotStudioView: React.FC = () => {
                 <Crop className="w-7 h-7" />
               </div>
               <h3 className="text-base font-bold text-foreground mb-1">
-                上传聊天记录或系统截图
+                {t.screenshot.dropTitle}
               </h3>
               <p className="text-xs text-muted-foreground mb-5">
-                一键裁掉顶部电量/WiFi状态栏、通知横幅、浏览器地址栏，并可一键遮住头像与昵称。
+                {t.screenshot.dropDesc}
               </p>
               <div className="flex items-center gap-2">
                 <label className="cursor-pointer">
@@ -334,7 +362,7 @@ export const ScreenshotStudioView: React.FC = () => {
                   />
                   <Button variant="default" size="sm" className="gap-1.5 pointer-events-none">
                     <Upload className="w-3.5 h-3.5" />
-                    <span>选择本地截图</span>
+                    <span>{t.screenshot.selectFile}</span>
                   </Button>
                 </label>
                 <Button
@@ -344,7 +372,7 @@ export const ScreenshotStudioView: React.FC = () => {
                   className="gap-1.5 border-cyan-500/30 text-cyan-500 hover:bg-cyan-500/10"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>试用聊天截图样例</span>
+                  <span>{t.screenshot.sampleBtn}</span>
                 </Button>
               </div>
             </div>
@@ -357,10 +385,10 @@ export const ScreenshotStudioView: React.FC = () => {
         <div className="space-y-5">
           <div className="space-y-1">
             <h4 className="text-xs font-bold text-foreground tracking-wide uppercase">
-              一键快速裁切预设
+              {t.screenshot.presetHeading}
             </h4>
             <p className="text-[11px] text-muted-foreground">
-              专为手机截图和电脑截屏设计的常见隐私裁切规范
+              {t.screenshot.presetSubheading}
             </p>
           </div>
 
@@ -369,7 +397,6 @@ export const ScreenshotStudioView: React.FC = () => {
             <button
               onClick={() => {
                 if (baseImage) {
-                  // Common mobile top status bar height ~110px or 5% of height
                   const statusBarPx = Math.round(baseImage.height * 0.05);
                   setTrimTop(statusBarPx);
                 }
@@ -379,11 +406,11 @@ export const ScreenshotStudioView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Smartphone className="w-4 h-4 text-sky-500" />
                 <div>
-                  <div className="font-semibold text-foreground">裁掉顶部状态栏</div>
-                  <div className="text-[10px] text-muted-foreground">抹去时间、电量、WiFi与信号</div>
+                  <div className="font-semibold text-foreground">{t.screenshot.trimTopBar}</div>
+                  <div className="text-[10px] text-muted-foreground">{t.screenshot.trimTopBarDesc}</div>
                 </div>
               </div>
-              <span className="text-[10px] font-mono text-primary">一键应用</span>
+              <span className="text-[10px] font-mono text-primary">{t.screenshot.applyPreset}</span>
             </button>
 
             <button
@@ -398,11 +425,11 @@ export const ScreenshotStudioView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Minus className="w-4 h-4 text-indigo-500" />
                 <div>
-                  <div className="font-semibold text-foreground">裁掉底部横条 (Home Bar)</div>
-                  <div className="text-[10px] text-muted-foreground">裁去底部虚拟按键与小黑条</div>
+                  <div className="font-semibold text-foreground">{t.screenshot.trimHomeBar}</div>
+                  <div className="text-[10px] text-muted-foreground">{t.screenshot.trimHomeBarDesc}</div>
                 </div>
               </div>
-              <span className="text-[10px] font-mono text-primary">一键应用</span>
+              <span className="text-[10px] font-mono text-primary">{t.screenshot.applyPreset}</span>
             </button>
 
             <button
@@ -417,11 +444,11 @@ export const ScreenshotStudioView: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Globe className="w-4 h-4 text-teal-500" />
                 <div>
-                  <div className="font-semibold text-foreground">裁掉浏览器顶部标签栏</div>
-                  <div className="text-[10px] text-muted-foreground">隐藏 URL 地址与书签隐私</div>
+                  <div className="font-semibold text-foreground">{t.screenshot.trimBrowserBar}</div>
+                  <div className="text-[10px] text-muted-foreground">{t.screenshot.trimBrowserBarDesc}</div>
                 </div>
               </div>
-              <span className="text-[10px] font-mono text-primary">一键应用</span>
+              <span className="text-[10px] font-mono text-primary">{t.screenshot.applyPreset}</span>
             </button>
           </div>
 
@@ -429,10 +456,10 @@ export const ScreenshotStudioView: React.FC = () => {
 
           {/* Fine-tuning Sliders */}
           <div className="space-y-3">
-            <span className="text-xs font-semibold text-foreground">精确像素边缘修剪 (Trim)</span>
+            <span className="text-xs font-semibold text-foreground">{t.screenshot.trimSlidersHeading}</span>
 
             <Slider
-              label="裁切顶部 (Top)"
+              label={t.screenshot.trimTop}
               value={trimTop}
               min={0}
               max={baseImage ? Math.floor(baseImage.height / 2) : 500}
@@ -442,7 +469,7 @@ export const ScreenshotStudioView: React.FC = () => {
             />
 
             <Slider
-              label="裁切底部 (Bottom)"
+              label={t.screenshot.trimBottom}
               value={trimBottom}
               min={0}
               max={baseImage ? Math.floor(baseImage.height / 2) : 500}
@@ -452,7 +479,7 @@ export const ScreenshotStudioView: React.FC = () => {
             />
 
             <Slider
-              label="裁切左侧 (Left)"
+              label={t.screenshot.trimLeft}
               value={trimLeft}
               min={0}
               max={baseImage ? Math.floor(baseImage.width / 2) : 500}
@@ -462,7 +489,7 @@ export const ScreenshotStudioView: React.FC = () => {
             />
 
             <Slider
-              label="裁切右侧 (Right)"
+              label={t.screenshot.trimRight}
               value={trimRight}
               min={0}
               max={baseImage ? Math.floor(baseImage.width / 2) : 500}
@@ -477,13 +504,13 @@ export const ScreenshotStudioView: React.FC = () => {
           {/* Quick Masks */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-foreground">快捷遮挡样式</span>
+              <span className="text-xs font-semibold text-foreground">{t.screenshot.maskHeading}</span>
               {masks.length > 0 && (
                 <button
                   onClick={() => setMasks([])}
                   className="text-[11px] text-muted-foreground hover:text-destructive"
                 >
-                  清空已打码 ({masks.length})
+                  {t.screenshot.clearMasks} ({masks.length})
                 </button>
               )}
             </div>
@@ -495,7 +522,7 @@ export const ScreenshotStudioView: React.FC = () => {
                   maskType === 'mosaic' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/40'
                 }`}
               >
-                马赛克遮罩
+                {t.screenshot.mosaicMask}
               </button>
               <button
                 onClick={() => setMaskType('solid')}
@@ -503,7 +530,7 @@ export const ScreenshotStudioView: React.FC = () => {
                   maskType === 'solid' ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/40'
                 }`}
               >
-                深色色块覆盖
+                {t.screenshot.solidMask}
               </button>
             </div>
           </div>
@@ -511,7 +538,7 @@ export const ScreenshotStudioView: React.FC = () => {
 
         {/* Tip */}
         <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground">
-          直接在左侧截图上点击任意头像或微信号，即可快速生成贴合保护遮罩。
+          {t.screenshot.tip}
         </div>
       </div>
     </div>

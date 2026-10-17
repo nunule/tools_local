@@ -12,13 +12,15 @@ import {
   Paintbrush,
   Camera,
   Crop,
-  CreditCard
+  CreditCard,
+  Languages
 } from 'lucide-react';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ActiveToolTab } from '@/types/privacyTools';
 import { BrandIcon } from '@/components/brand/BrandIcon';
+import { useI18n } from '@/i18n';
 
 interface HeaderProps {
   onOpenShortcuts: () => void;
@@ -38,16 +40,18 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
     images
   } = useWatermarkStore();
 
+  const { language, toggleLanguage, t } = useI18n();
+
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   const navTools: { id: ActiveToolTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'watermark', label: '图片水印', icon: <ImageIcon className="w-3.5 h-3.5" /> },
-    { id: 'redact', label: '隐私遮挡', icon: <Paintbrush className="w-3.5 h-3.5" /> },
-    { id: 'exif', label: '照片清理', icon: <Camera className="w-3.5 h-3.5" /> },
-    { id: 'screenshot', label: '截图隐私', icon: <Crop className="w-3.5 h-3.5" /> },
-    { id: 'id-copy', label: '证件副本', icon: <CreditCard className="w-3.5 h-3.5" /> },
+    { id: 'watermark', label: t.nav.watermark, icon: <ImageIcon className="w-3.5 h-3.5" /> },
+    { id: 'redact', label: t.nav.redact, icon: <Paintbrush className="w-3.5 h-3.5" /> },
+    { id: 'exif', label: t.nav.exif, icon: <Camera className="w-3.5 h-3.5" /> },
+    { id: 'screenshot', label: t.nav.screenshot, icon: <Crop className="w-3.5 h-3.5" /> },
+    { id: 'id-copy', label: t.nav.idCopy, icon: <CreditCard className="w-3.5 h-3.5" /> },
   ];
 
   return (
@@ -73,11 +77,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
               </span>
               <Badge variant="success" className="hidden sm:inline-flex text-[10px] py-0 px-1.5 h-4.5 gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                100% 本地离线
+                {t.common.offlineBadge}
               </Badge>
             </div>
             <p className="text-[11px] text-muted-foreground hidden xl:block">
-              浏览器端纯本地图像处理 · 零上传 · 隐私安全
+              {t.common.tagline}
             </p>
           </div>
         </div>
@@ -114,10 +118,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
               ? 'bg-card text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
           }`}
-          title="CodeMirror 6 JSON 配置"
+          title="CodeMirror 6 JSON"
         >
           <Code className="w-3.5 h-3.5" />
-          <span>配置</span>
+          <span>{t.nav.config}</span>
         </button>
 
         <button
@@ -127,10 +131,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
               ? 'bg-card text-foreground shadow-sm'
               : 'text-muted-foreground hover:text-foreground'
           }`}
-          title="隐私与离线架构"
+          title={t.nav.about}
         >
           <Info className="w-3.5 h-3.5" />
-          <span>说明</span>
+          <span>{t.nav.about}</span>
         </button>
       </div>
 
@@ -144,15 +148,27 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
             className="text-xs h-8 gap-1.5 text-teal-500 border-teal-500/30 hover:bg-teal-500/10 hidden md:inline-flex"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>加载样例图</span>
+            <span>{t.common.loadSample}</span>
           </Button>
         )}
+
+        {/* Language Switcher */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={toggleLanguage}
+          title={t.common.langToggle}
+          className="h-8 px-2 text-xs gap-1 font-mono text-muted-foreground hover:text-foreground border border-border/50"
+        >
+          <Languages className="w-3.5 h-3.5 text-teal-500" />
+          <span className="font-semibold text-[11px]">{language === 'zh' ? 'EN' : '中'}</span>
+        </Button>
 
         <Button
           variant="ghost"
           size="icon"
           onClick={onOpenShortcuts}
-          title="键盘快捷键 (Cmd/Ctrl + /)"
+          title={t.common.shortcuts}
           className="text-muted-foreground hover:text-foreground h-8 w-8"
         >
           <Keyboard className="w-4 h-4" />
@@ -162,7 +178,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
           variant="ghost"
           size="icon"
           onClick={() => setDesktopFrame(!desktopFrame)}
-          title={desktopFrame ? '退出PC窗口装饰' : '切换PC桌面窗口框架'}
+          title={t.common.desktopToggle}
           className={`h-8 w-8 ${desktopFrame ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
         >
           <AppWindow className="w-4 h-4" />
@@ -172,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
           variant="ghost"
           size="icon"
           onClick={toggleTheme}
-          title="切换明暗主题"
+          title={t.common.themeToggle}
           className="text-muted-foreground hover:text-foreground h-8 w-8"
         >
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}

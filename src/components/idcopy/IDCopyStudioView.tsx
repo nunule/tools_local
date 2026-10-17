@@ -1,18 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   CreditCard, 
-  FileText, 
   ShieldCheck, 
-  Check, 
   Download, 
   Upload, 
   Sparkles, 
-  Calendar, 
-  Building2, 
-  Layers,
-  Eye,
-  Sliders,
-  Printer
+  Printer 
 } from 'lucide-react';
 import { IDCopyConfig, IDDocType } from '@/types/privacyTools';
 import { renderIDCertifiedCopy } from '@/utils/idCopyRenderer';
@@ -21,18 +14,20 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/i18n';
 import confetti from 'canvas-confetti';
 
 export const IDCopyStudioView: React.FC = () => {
+  const { t, language } = useI18n();
   const [frontDataUrl, setFrontDataUrl] = useState<string | null>(null);
   const [backDataUrl, setBackDataUrl] = useState<string | null>(null);
 
   const [config, setConfig] = useState<IDCopyConfig>({
     docType: 'id-card',
-    purpose: '入职入职材料审核',
-    issuerOrg: '某某科技有限公司',
+    purpose: language === 'zh' ? '入职材料审核' : 'Employment Verification',
+    issuerOrg: language === 'zh' ? '某某科技有限公司' : 'Acme Corporation',
     validDays: 30,
-    customWatermark: '仅供办理入职使用 他用无效',
+    customWatermark: language === 'zh' ? '仅供办理入职使用 他用无效' : 'For employment verification only. Other use invalid.',
     maskIdSuffix: true,
     maskAddressDetail: true,
     maskBirthDate: false,
@@ -40,6 +35,25 @@ export const IDCopyStudioView: React.FC = () => {
     watermarkAngle: -25,
     layout: 'a4-sheet',
   });
+
+  // Keep purpose and customWatermark aligned on language switch if unchanged
+  useEffect(() => {
+    if (language === 'en' && config.purpose === '入职材料审核') {
+      setConfig((prev) => ({
+        ...prev,
+        purpose: 'Employment Verification',
+        issuerOrg: 'Acme Corporation',
+        customWatermark: 'For employment verification only. Other use invalid.'
+      }));
+    } else if (language === 'zh' && config.purpose === 'Employment Verification') {
+      setConfig((prev) => ({
+        ...prev,
+        purpose: '入职材料审核',
+        issuerOrg: '某某科技有限公司',
+        customWatermark: '仅供办理入职使用 他用无效'
+      }));
+    }
+  }, [language]);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -58,18 +72,26 @@ export const IDCopyStudioView: React.FC = () => {
     // Header
     ctxF.fillStyle = '#0284c7';
     ctxF.font = 'bold 36px "Microsoft YaHei", sans-serif';
-    ctxF.fillText('居民身份证', 100, 90);
+    ctxF.fillText(language === 'zh' ? '居民身份证' : 'IDENTITY CARD', 100, 90);
 
     // Text fields
     ctxF.fillStyle = '#334155';
     ctxF.font = '500 24px -apple-system, sans-serif';
-    ctxF.fillText('姓名：王小明', 100, 180);
-    ctxF.fillText('性别：男      民族：汉', 100, 240);
-    ctxF.fillText('出生：1994 年 08 月 15 日', 100, 300);
-    ctxF.fillText('住址：上海市浦东新区张江高科园区碧波路 888 弄 3 号楼 602 室', 100, 360);
-
-    ctxF.font = 'bold 32px monospace';
-    ctxF.fillText('公民身份号码：310115199408154829', 100, 520);
+    if (language === 'en') {
+      ctxF.fillText('Name: David Miller', 100, 180);
+      ctxF.fillText('Sex: M      Nationality: USA', 100, 240);
+      ctxF.fillText('Birth: Aug 15, 1994', 100, 300);
+      ctxF.fillText('Address: 888 Innovation Way, Suite 602, Silicon Valley, CA', 100, 360);
+      ctxF.font = 'bold 32px monospace';
+      ctxF.fillText('ID / SSN: 310115199408154829', 100, 520);
+    } else {
+      ctxF.fillText('姓名：王小明', 100, 180);
+      ctxF.fillText('性别：男      民族：汉', 100, 240);
+      ctxF.fillText('出生：1994 年 08 月 15 日', 100, 300);
+      ctxF.fillText('住址：上海市浦东新区张江高科园区碧波路 888 弄 3 号楼 602 室', 100, 360);
+      ctxF.font = 'bold 32px monospace';
+      ctxF.fillText('公民身份号码：310115199408154829', 100, 520);
+    }
 
     // Avatar box
     ctxF.fillStyle = '#cbd5e1';
@@ -77,7 +99,7 @@ export const IDCopyStudioView: React.FC = () => {
     ctxF.fillStyle = '#64748b';
     ctxF.font = '20px sans-serif';
     ctxF.textAlign = 'center';
-    ctxF.fillText('免冠证件照', 820, 275);
+    ctxF.fillText(language === 'zh' ? '免冠证件照' : 'PHOTO', 820, 275);
     ctxF.textAlign = 'start';
 
     // Generate sample Back ID Card
@@ -92,14 +114,19 @@ export const IDCopyStudioView: React.FC = () => {
     ctxB.fillStyle = '#dc2626';
     ctxB.font = 'bold 34px "Microsoft YaHei", sans-serif';
     ctxB.textAlign = 'center';
-    ctxB.fillText('中华人民共和国', 500, 240);
-    ctxB.fillText('居民身份证', 500, 310);
+    ctxB.fillText(language === 'zh' ? '中华人民共和国' : 'NATIONAL REGISTRY', 500, 240);
+    ctxB.fillText(language === 'zh' ? '居民身份证' : 'RESIDENT IDENTITY CARD', 500, 310);
 
     ctxB.fillStyle = '#334155';
     ctxB.font = '500 24px -apple-system, sans-serif';
     ctxB.textAlign = 'start';
-    ctxB.fillText('签发机关：上海市公安局浦东分局', 240, 440);
-    ctxB.fillText('有效期限：2020.08.15 - 2040.08.15', 240, 500);
+    if (language === 'en') {
+      ctxB.fillText('Issuing Authority: Police Department of Metro City', 240, 440);
+      ctxB.fillText('Validity Period: 2020.08.15 - 2040.08.15', 240, 500);
+    } else {
+      ctxB.fillText('签发机关：上海市公安局浦东分局', 240, 440);
+      ctxB.fillText('有效期限：2020.08.15 - 2040.08.15', 240, 500);
+    }
 
     setFrontDataUrl(canvasF.toDataURL('image/png'));
     setBackDataUrl(canvasB.toDataURL('image/png'));
@@ -149,6 +176,10 @@ export const IDCopyStudioView: React.FC = () => {
     }, 'image/png');
   };
 
+  const quickPurposes = language === 'zh'
+    ? ['入职审核', '租房签约', '银行开户', '证券认证', '签证申办']
+    : ['Employment', 'Lease Agreement', 'Bank Account', 'Security KYC', 'Visa Application'];
+
   return (
     <div className="flex-1 flex overflow-hidden bg-background">
       {/* Center Viewport */}
@@ -157,11 +188,11 @@ export const IDCopyStudioView: React.FC = () => {
         <div className="h-12 border-b border-border bg-card/80 backdrop-blur-md px-4 flex items-center justify-between z-10 shrink-0 select-none">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-foreground">
-              证件分享副本 (组合裁剪 / 敏感字段遮挡 / 防盗用途水印)
+              {t.idCopy.title}
             </span>
-            <Badge variant="success" className="text-[10px] gap-1">
-              <ShieldCheck className="w-3 h-3" />
-              防盗用安全副本
+            <Badge variant="outline" className="text-[10px] gap-1">
+              <Printer className="w-3 h-3 text-indigo-400" />
+              {t.idCopy.badge}
             </Badge>
           </div>
 
@@ -171,28 +202,27 @@ export const IDCopyStudioView: React.FC = () => {
                 variant="default"
                 size="sm"
                 onClick={handleDownload}
-                className="h-7 text-xs gap-1.5 shadow-sm"
+                className="h-7 text-xs gap-1.5 shadow-sm bg-indigo-600 hover:bg-indigo-500"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>导出脱敏安全副本</span>
+                <span>{t.idCopy.exportBtn}</span>
               </Button>
             )}
           </div>
         </div>
 
-        {/* Workspace Canvas */}
+        {/* Viewport Workspace */}
         <div className="flex-1 p-6 flex items-center justify-center bg-muted/20 overflow-auto">
           {frontDataUrl ? (
             <div className="flex flex-col items-center gap-3">
-              <div className="shadow-2xl rounded-sm border border-border max-h-[75vh] max-w-[85vw] overflow-hidden bg-white">
+              <div className="relative shadow-2xl rounded-sm border border-border max-h-[75vh] max-w-[85vw] overflow-hidden bg-white">
                 <canvas
                   ref={canvasRef}
                   className="max-h-[75vh] w-auto object-contain block"
                 />
               </div>
-              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                已自动覆写“仅供办理使用”斜向防伪水印并隐去敏感门牌号及身份证尾号
+              <span className="text-[11px] text-muted-foreground">
+                {t.idCopy.notice}
               </span>
             </div>
           ) : (
@@ -201,10 +231,10 @@ export const IDCopyStudioView: React.FC = () => {
                 <CreditCard className="w-7 h-7" />
               </div>
               <h3 className="text-base font-bold text-foreground mb-1">
-                制作身份证、驾照、护照安全分享副本
+                {t.idCopy.dropTitle}
               </h3>
               <p className="text-xs text-muted-foreground mb-5">
-                在将证件照片发送给中介、HR 或平台实名认证时，自动隐去住址门牌号与尾号，并覆盖防盗用途水印。
+                {t.idCopy.dropDesc}
               </p>
               <div className="flex items-center gap-2">
                 <label className="cursor-pointer">
@@ -223,7 +253,7 @@ export const IDCopyStudioView: React.FC = () => {
                   />
                   <Button variant="default" size="sm" className="gap-1.5 pointer-events-none">
                     <Upload className="w-3.5 h-3.5" />
-                    <span>上传证件正面 (人像面)</span>
+                    <span>{t.idCopy.uploadFront}</span>
                   </Button>
                 </label>
                 <Button
@@ -233,7 +263,7 @@ export const IDCopyStudioView: React.FC = () => {
                   className="gap-1.5 border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>载入模拟居民身份证</span>
+                  <span>{t.idCopy.sampleBtn}</span>
                 </Button>
               </div>
             </div>
@@ -246,30 +276,30 @@ export const IDCopyStudioView: React.FC = () => {
         <div className="space-y-4">
           <div className="space-y-1">
             <h4 className="text-xs font-bold text-foreground tracking-wide uppercase">
-              证件副本安全合规配置
+              {t.idCopy.configTitle}
             </h4>
             <p className="text-[11px] text-muted-foreground">
-              组合裁剪排版、敏感字段遮挡及指定业务用途水印
+              {t.idCopy.configSubtitle}
             </p>
           </div>
 
           {/* Document Type */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">证件类型</label>
+            <label className="text-xs font-semibold text-foreground">{t.idCopy.docType}</label>
             <div className="grid grid-cols-3 gap-1.5">
               {[
-                { id: 'id-card', label: '居民身份证' },
-                { id: 'driver-license', label: '驾驶证' },
-                { id: 'passport', label: '护照/港澳台' },
-              ].map((t) => (
+                { id: 'id-card', label: t.idCopy.types.idCard },
+                { id: 'driver-license', label: t.idCopy.types.driverLicense },
+                { id: 'passport', label: t.idCopy.types.passport },
+              ].map((doc) => (
                 <button
-                  key={t.id}
-                  onClick={() => setConfig({ ...config, docType: t.id as IDDocType })}
-                  className={`py-1.5 text-xs rounded-lg border font-medium ${
-                    config.docType === t.id ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/40'
+                  key={doc.id}
+                  onClick={() => setConfig({ ...config, docType: doc.id as IDDocType })}
+                  className={`py-1.5 text-xs rounded-lg border font-medium transition-all ${
+                    config.docType === doc.id ? 'bg-primary text-primary-foreground border-primary shadow-xs' : 'bg-muted/40 hover:bg-muted'
                   }`}
                 >
-                  {t.label}
+                  {doc.label}
                 </button>
               ))}
             </div>
@@ -277,18 +307,18 @@ export const IDCopyStudioView: React.FC = () => {
 
           {/* Layout Mode */}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">排版版式</label>
+            <label className="text-xs font-semibold text-foreground">{t.idCopy.layoutLabel}</label>
             <div className="grid grid-cols-3 gap-1.5">
               {[
-                { id: 'a4-sheet', label: '标准 A4 副本' },
-                { id: 'side-by-side', label: '正反面并排' },
-                { id: 'single', label: '仅正面' },
+                { id: 'a4-sheet', label: t.idCopy.layouts.a4Sheet },
+                { id: 'side-by-side', label: t.idCopy.layouts.sideBySide },
+                { id: 'single', label: t.idCopy.layouts.single },
               ].map((l) => (
                 <button
                   key={l.id}
                   onClick={() => setConfig({ ...config, layout: l.id as any })}
-                  className={`py-1.5 text-xs rounded-lg border font-medium ${
-                    config.layout === l.id ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted/40'
+                  className={`py-1.5 text-xs rounded-lg border font-medium transition-all ${
+                    config.layout === l.id ? 'bg-primary text-primary-foreground border-primary shadow-xs' : 'bg-muted/40 hover:bg-muted'
                   }`}
                 >
                   {l.label}
@@ -301,7 +331,7 @@ export const IDCopyStudioView: React.FC = () => {
           {config.layout !== 'single' && (
             <div className="p-2.5 rounded-xl border border-dashed border-border bg-muted/30 flex items-center justify-between">
               <span className="text-xs text-muted-foreground">
-                {backDataUrl ? '已加载反面 (国徽面)' : '未上传反面 (国徽面)'}
+                {backDataUrl ? t.idCopy.backLoaded : t.idCopy.backNotLoaded}
               </span>
               <label className="cursor-pointer">
                 <input
@@ -318,7 +348,7 @@ export const IDCopyStudioView: React.FC = () => {
                   className="hidden"
                 />
                 <Button variant="outline" size="sm" className="h-6 text-[11px] pointer-events-none">
-                  {backDataUrl ? '重新上传' : '上传反面'}
+                  {backDataUrl ? t.idCopy.reuploadBack : t.idCopy.uploadBack}
                 </Button>
               </label>
             </div>
@@ -328,25 +358,25 @@ export const IDCopyStudioView: React.FC = () => {
 
           {/* Sensitive Field Redactions */}
           <div className="space-y-2.5">
-            <span className="text-xs font-semibold text-foreground">敏感信息快速脱敏遮挡</span>
+            <span className="text-xs font-semibold text-foreground">{t.idCopy.redactionSection}</span>
 
             <Switch
-              label="遮挡身份证号后 4 位"
-              description="保留前14位核验出生日期，遮蔽个人身份校验特征"
+              label={t.idCopy.maskIdSuffix}
+              description={t.idCopy.maskIdSuffixDesc}
               checked={config.maskIdSuffix}
               onCheckedChange={(maskIdSuffix) => setConfig({ ...config, maskIdSuffix })}
             />
 
             <Switch
-              label="遮挡详细门牌住址"
-              description="保留省市区行政区划，隐去单元门牌号等隐私"
+              label={t.idCopy.maskAddress}
+              description={t.idCopy.maskAddressDesc}
               checked={config.maskAddressDetail}
               onCheckedChange={(maskAddressDetail) => setConfig({ ...config, maskAddressDetail })}
             />
 
             <Switch
-              label="遮挡出生年月日"
-              description="隐去具体的出生日期信息"
+              label={t.idCopy.maskBirth}
+              description={t.idCopy.maskBirthDesc}
               checked={config.maskBirthDate}
               onCheckedChange={(maskBirthDate) => setConfig({ ...config, maskBirthDate })}
             />
@@ -356,21 +386,21 @@ export const IDCopyStudioView: React.FC = () => {
 
           {/* Purpose & Legal Protection Watermarks */}
           <div className="space-y-3">
-            <span className="text-xs font-semibold text-foreground">法定防伪用途声明水印</span>
+            <span className="text-xs font-semibold text-foreground">{t.idCopy.purposeSection}</span>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-muted-foreground">具体业务用途</label>
+              <label className="text-[11px] text-muted-foreground">{t.idCopy.purposeLabel}</label>
               <input
                 type="text"
                 value={config.purpose}
                 onChange={(e) => setConfig({ ...config, purpose: e.target.value })}
                 className="w-full h-8 px-2.5 text-xs rounded-lg border border-border bg-muted/40 font-medium"
-                placeholder="例如：入职办理 / 租房合同核验 / 办卡"
+                placeholder={t.idCopy.purposePlaceholder}
               />
             </div>
 
             <div className="flex flex-wrap gap-1">
-              {['入职审核', '租房签约', '银行开户', '证券认证', '签证申办'].map((p) => (
+              {quickPurposes.map((p) => (
                 <button
                   key={p}
                   onClick={() => setConfig({ ...config, purpose: p })}
@@ -382,28 +412,28 @@ export const IDCopyStudioView: React.FC = () => {
             </div>
 
             <div className="space-y-1">
-              <label className="text-[11px] text-muted-foreground">办理机构或单位名称</label>
+              <label className="text-[11px] text-muted-foreground">{t.idCopy.issuerLabel}</label>
               <input
                 type="text"
                 value={config.issuerOrg}
                 onChange={(e) => setConfig({ ...config, issuerOrg: e.target.value })}
                 className="w-full h-8 px-2.5 text-xs rounded-lg border border-border bg-muted/40 font-medium"
-                placeholder="例如：XX有限责任公司"
+                placeholder={t.idCopy.issuerPlaceholder}
               />
             </div>
 
             <Slider
-              label="有效期限"
+              label={t.idCopy.validDays}
               value={config.validDays}
               min={7}
               max={180}
               step={7}
-              unit="天"
+              unit={language === 'zh' ? '天' : 'd'}
               onChange={(validDays) => setConfig({ ...config, validDays })}
             />
 
             <Slider
-              label="水印透明度"
+              label={t.idCopy.watermarkOpacity}
               value={config.watermarkOpacity}
               min={20}
               max={90}
@@ -416,7 +446,7 @@ export const IDCopyStudioView: React.FC = () => {
 
         {/* Tip */}
         <div className="p-3 rounded-xl bg-muted/40 border border-border/60 text-[11px] text-muted-foreground mt-4">
-          依照中国居民身份证法及个人信息保护法规范，标注“仅供特定机构核验使用”并隐去门牌号可有效阻断他人冒名贷款或办理电信业务。
+          {t.idCopy.complianceTip}
         </div>
       </div>
     </div>

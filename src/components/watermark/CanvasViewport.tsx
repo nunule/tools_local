@@ -16,8 +16,10 @@ import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { renderWatermarkedImage, canvasToBlob, formatFileSize } from '@/utils/watermarkRenderer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useI18n } from '@/i18n';
 
 export const CanvasViewport: React.FC = () => {
+  const { t } = useI18n();
   const {
     images,
     activeImageId,
@@ -265,10 +267,10 @@ export const CanvasViewport: React.FC = () => {
           </div>
 
           <h3 className="text-lg font-bold text-foreground mb-1">
-            拖入图片，开始添加水印
+            {t.watermark.viewport.dropTitle}
           </h3>
           <p className="text-xs text-muted-foreground mb-6 max-w-sm">
-            支持 PNG、JPG、WebP、GIF，可多选或使用 Cmd/Ctrl + V 粘贴。
+            {t.watermark.viewport.dropDesc}
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-3">
@@ -282,7 +284,7 @@ export const CanvasViewport: React.FC = () => {
               />
               <Button variant="default" size="default" className="gap-2 pointer-events-none shadow-md">
                 <FileImage className="w-4 h-4" />
-                选择本地图片
+                {t.watermark.viewport.selectFiles}
               </Button>
             </label>
 
@@ -293,7 +295,7 @@ export const CanvasViewport: React.FC = () => {
               className="gap-2 border-primary/30 hover:bg-primary/10 text-primary"
             >
               <Sparkles className="w-4 h-4" />
-              使用示例图
+              {t.watermark.viewport.sampleBtn}
             </Button>
           </div>
 
@@ -331,7 +333,7 @@ export const CanvasViewport: React.FC = () => {
           </span>
           {isRendering && (
             <Badge variant="warning" className="text-[10px] py-0 px-1 animate-pulse">
-              渲染中...
+              {t.common.rendering}
             </Badge>
           )}
         </div>
@@ -342,7 +344,7 @@ export const CanvasViewport: React.FC = () => {
             variant="ghost"
             size="icon"
             onClick={zoomOut}
-            title="缩小 (Ctrl + -)"
+            title={t.watermark.viewport.zoomOut}
             className="h-7 w-7 text-foreground/80 hover:text-foreground"
           >
             <ZoomOut className="w-3.5 h-3.5" />
@@ -350,7 +352,7 @@ export const CanvasViewport: React.FC = () => {
 
           <button
             onClick={resetZoom}
-            title="点击恢复 100% (1:1)"
+            title={t.watermark.viewport.resetCenter}
             className="px-2 py-0.5 text-xs font-mono text-foreground/90 hover:bg-muted rounded"
           >
             {Math.round(zoom * 100)}%
@@ -360,7 +362,7 @@ export const CanvasViewport: React.FC = () => {
             variant="ghost"
             size="icon"
             onClick={zoomIn}
-            title="放大 (Ctrl + +)"
+            title={t.watermark.viewport.zoomIn}
             className="h-7 w-7 text-foreground/80 hover:text-foreground"
           >
             <ZoomIn className="w-3.5 h-3.5" />
@@ -372,7 +374,7 @@ export const CanvasViewport: React.FC = () => {
             variant="ghost"
             size="icon"
             onClick={handleFitScreen}
-            title="自适应画布大小"
+            title={t.watermark.viewport.fitScreen}
             className="h-7 w-7 text-foreground/80 hover:text-foreground"
           >
             <Maximize2 className="w-3.5 h-3.5" />
@@ -382,7 +384,7 @@ export const CanvasViewport: React.FC = () => {
             variant="ghost"
             size="icon"
             onClick={() => { resetZoom(); setPan({ x: 0, y: 0 }); }}
-            title="重置居中"
+            title={t.watermark.viewport.resetCenter}
             className="h-7 w-7 text-foreground/80 hover:text-foreground"
           >
             <RotateCcw className="w-3.5 h-3.5" />
@@ -394,7 +396,7 @@ export const CanvasViewport: React.FC = () => {
             variant={showGrid ? 'default' : 'ghost'}
             size="icon"
             onClick={() => setShowGrid(!showGrid)}
-            title="切换透明棋盘背景"
+            title={t.watermark.viewport.toggleGrid}
             className="h-7 w-7"
           >
             <Grid className="w-3.5 h-3.5" />
@@ -408,11 +410,11 @@ export const CanvasViewport: React.FC = () => {
             onTouchStart={() => setIsComparing(true)}
             onTouchEnd={() => setIsComparing(false)}
             onClick={() => setIsComparing(!isComparing)}
-            title="按住或点击对比无水印原图"
+            title={t.common.holdToCompare}
             className="h-7 px-2 text-xs gap-1 font-medium select-none"
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>{isComparing ? '查看原图' : '对比'}</span>
+            <span>{isComparing ? t.common.comparingOriginal : t.common.compare}</span>
           </Button>
         </div>
       </div>
@@ -433,7 +435,7 @@ export const CanvasViewport: React.FC = () => {
 
         {isComparing && (
           <div className="absolute top-3 left-3 bg-destructive text-destructive-foreground px-2 py-0.5 rounded text-xs font-semibold shadow-md pointer-events-none">
-            原图预览 (无水印)
+            {t.common.comparingOriginal}
           </div>
         )}
       </div>
@@ -441,7 +443,7 @@ export const CanvasViewport: React.FC = () => {
       {/* Drag hints badge */}
       <div className="absolute bottom-3 left-4 pointer-events-none text-[11px] text-muted-foreground bg-card/60 backdrop-blur-xs px-2 py-1 rounded border border-border/40 flex items-center gap-1.5">
         <Move className="w-3 h-3" />
-        <span>拖拽平移 · 滚轮缩放 · 双击居中</span>
+        <span>{t.watermark.viewport.dragHint}</span>
       </div>
     </div>
   );

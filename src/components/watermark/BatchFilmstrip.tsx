@@ -12,8 +12,10 @@ import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { Button } from '@/components/ui/button';
 import { formatFileSize } from '@/utils/watermarkRenderer';
 import { exportAllImagesAsZip } from '@/utils/batchExporter';
+import { useI18n } from '@/i18n';
 
 export const BatchFilmstrip: React.FC = () => {
+  const { t } = useI18n();
   const {
     images,
     activeImageId,
@@ -104,7 +106,7 @@ export const BatchFilmstrip: React.FC = () => {
                   removeImage(img.id);
                 }}
                 className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 text-white/90 hover:bg-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                title="移除此图"
+                title={t.watermark.filmstrip.removeImage}
               >
                 <X className="w-2.5 h-2.5" />
               </button>
@@ -122,7 +124,7 @@ export const BatchFilmstrip: React.FC = () => {
             className="hidden"
           />
           <Plus className="w-4 h-4 mb-0.5" />
-          <span className="text-[10px] font-medium">添加</span>
+          <span className="text-[10px] font-medium">{t.watermark.filmstrip.addMore}</span>
         </label>
       </div>
 
@@ -130,13 +132,13 @@ export const BatchFilmstrip: React.FC = () => {
       <div className="flex items-center gap-2 shrink-0 border-l border-border/60 pl-3">
         <div className="flex flex-col text-right hidden sm:flex">
           <span className="text-xs font-medium text-foreground">
-            已导入 <span className="font-mono text-primary">{images.length}</span> 张
+            {t.watermark.filmstrip.importedCount} <span className="font-mono text-primary">{images.length}</span>
           </span>
           <button
             onClick={clearAllImages}
             className="text-[11px] text-muted-foreground hover:text-destructive text-right transition-colors"
           >
-            清空列表
+            {t.watermark.filmstrip.clearAll}
           </button>
         </div>
 
@@ -148,7 +150,7 @@ export const BatchFilmstrip: React.FC = () => {
           className="gap-1.5 h-9 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
         >
           <Archive className="w-4 h-4" />
-          <span>{isExportingBatch ? `打包中 ${batchProgress}%` : '一键打包 ZIP'}</span>
+          <span>{isExportingBatch ? `${t.watermark.export.packaging} ${batchProgress}%` : t.watermark.filmstrip.exportZip}</span>
         </Button>
       </div>
     </div>

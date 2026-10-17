@@ -3,11 +3,7 @@ import {
   Type, 
   Grid3X3, 
   Palette, 
-  Sliders, 
-  Download, 
-  Sparkles, 
   Bookmark, 
-  RotateCw,
   RefreshCw,
   Layers,
   ArrowUpLeft,
@@ -20,10 +16,10 @@ import {
   ArrowDown,
   ArrowDownRight,
   Archive,
-  Copy,
-  Check
+  Download
 } from 'lucide-react';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
+import { useI18n } from '@/i18n';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
@@ -37,6 +33,7 @@ import { SinglePosition } from '@/types/watermark';
 import { exportSingleImage, exportAllImagesAsZip } from '@/utils/batchExporter';
 
 export const WatermarkControls: React.FC = () => {
+  const { t, language } = useI18n();
   const {
     config,
     updateConfig,
@@ -50,7 +47,6 @@ export const WatermarkControls: React.FC = () => {
   } = useWatermarkStore();
 
   const [activeTab, setActiveTab] = useState<'text' | 'layout' | 'style' | 'presets' | 'export'>('text');
-  const [copiedPreset, setCopiedPreset] = useState<string | null>(null);
 
   const activeImage = images.find((img) => img.id === activeImageId);
 
@@ -64,16 +60,100 @@ export const WatermarkControls: React.FC = () => {
 
   // 9 Grid anchor definitions
   const gridPositions: { id: SinglePosition; label: string; icon: React.ReactNode }[] = [
-    { id: 'top-left', label: '左上', icon: <ArrowUpLeft className="w-3.5 h-3.5" /> },
-    { id: 'top-center', label: '中上', icon: <ArrowUp className="w-3.5 h-3.5" /> },
-    { id: 'top-right', label: '右上', icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
-    { id: 'middle-left', label: '居左', icon: <ArrowLeft className="w-3.5 h-3.5" /> },
-    { id: 'center', label: '正中', icon: <Dot className="w-4 h-4" /> },
-    { id: 'middle-right', label: '居右', icon: <ArrowRight className="w-3.5 h-3.5" /> },
-    { id: 'bottom-left', label: '左下', icon: <ArrowDownLeft className="w-3.5 h-3.5" /> },
-    { id: 'bottom-center', label: '中下', icon: <ArrowDown className="w-3.5 h-3.5" /> },
-    { id: 'bottom-right', label: '右下', icon: <ArrowDownRight className="w-3.5 h-3.5" /> },
+    { id: 'top-left', label: t.watermark.layout.anchors.topLeft, icon: <ArrowUpLeft className="w-3.5 h-3.5" /> },
+    { id: 'top-center', label: t.watermark.layout.anchors.topCenter, icon: <ArrowUp className="w-3.5 h-3.5" /> },
+    { id: 'top-right', label: t.watermark.layout.anchors.topRight, icon: <ArrowUpRight className="w-3.5 h-3.5" /> },
+    { id: 'middle-left', label: t.watermark.layout.anchors.middleLeft, icon: <ArrowLeft className="w-3.5 h-3.5" /> },
+    { id: 'center', label: t.watermark.layout.anchors.center, icon: <Dot className="w-4 h-4" /> },
+    { id: 'middle-right', label: t.watermark.layout.anchors.middleRight, icon: <ArrowRight className="w-3.5 h-3.5" /> },
+    { id: 'bottom-left', label: t.watermark.layout.anchors.bottomLeft, icon: <ArrowDownLeft className="w-3.5 h-3.5" /> },
+    { id: 'bottom-center', label: t.watermark.layout.anchors.bottomCenter, icon: <ArrowDown className="w-3.5 h-3.5" /> },
+    { id: 'bottom-right', label: t.watermark.layout.anchors.bottomRight, icon: <ArrowDownRight className="w-3.5 h-3.5" /> },
   ];
+
+  const getColorLabel = (color: string) => {
+    if (language === 'zh') {
+      if (color === '#ffffff') return '透亮纯白';
+      if (color === '#e2e8f0') return '柔和浅灰';
+      if (color === '#090d16') return '冷调纯黑';
+      if (color === '#ef4444') return '警戒印红';
+      if (color === '#3b82f6') return '商务靛蓝';
+      if (color === '#eab308') return '防伪金黄';
+    } else {
+      if (color === '#ffffff') return 'Bright White';
+      if (color === '#e2e8f0') return 'Soft Light Gray';
+      if (color === '#090d16') return 'Matte Black';
+      if (color === '#ef4444') return 'Alert Red';
+      if (color === '#3b82f6') return 'Business Blue';
+      if (color === '#eab308') return 'Security Gold';
+    }
+    return color;
+  };
+
+  const getFontWeightLabel = (w: '300' | '400' | '600' | '900') => {
+    if (language === 'zh') {
+      return w === '300' ? '细体' : w === '400' ? '常规' : w === '600' ? '粗体' : '极粗';
+    }
+    return w === '300' ? 'Light' : w === '400' ? 'Regular' : w === '600' ? 'SemiBold' : 'Black';
+  };
+
+  const getFontLabel = (f: { label: string; value: string }) => {
+    if (language === 'en') {
+      if (f.label.includes('Plus Jakarta Sans')) return 'Plus Jakarta Sans (Default Latin)';
+      if (f.label.includes('Inter')) return 'Inter (Modern Sans)';
+      if (f.label.includes('苹方')) return 'PingFang / YaHei (System Sans)';
+      if (f.label.includes('宋体')) return 'Songti / SimSun (Serif)';
+      if (f.label.includes('黑体')) return 'SimHei / Heiti (Bold Sans)';
+      if (f.label.includes('JetBrains Mono')) return 'JetBrains Mono (Monospace)';
+      if (f.label.includes('Impact')) return 'Impact (Heavy Sans)';
+      if (f.label.includes('Georgia')) return 'Georgia (Elegant Serif)';
+    }
+    return f.label;
+  };
+
+  const getPresetDetails = (preset: WatermarkPreset) => {
+    if (language === 'en') {
+      switch (preset.id) {
+        case 'confidential-tiled':
+          return {
+            name: 'Confidential Tiled',
+            description: 'White semi-transparent diagonal staggered anti-theft watermark with subtle dark stroke.',
+            mode: 'Tile'
+          };
+        case 'id-verification':
+          return {
+            name: 'ID Verification Copy',
+            description: 'Designed for KYC, rental, and employment identity document verification.',
+            mode: 'Tile'
+          };
+        case 'minimal-corner':
+          return {
+            name: 'Minimal Corner Signature',
+            description: 'Subtle semi-transparent corner watermark for photography and creative media.',
+            mode: 'Single'
+          };
+        case 'center-stamp':
+          return {
+            name: 'Center Stamp',
+            description: 'Large semi-transparent sample watermark stamped across the center.',
+            mode: 'Single'
+          };
+        case 'dense-security':
+          return {
+            name: 'Dense Security Grid',
+            description: 'Ultra-dense diagonal grid watermark that prevents partial cropping or tampering.',
+            mode: 'Tile'
+          };
+        default:
+          return { name: preset.name, description: preset.description, mode: preset.config.mode === 'tile' ? 'Tile' : 'Single' };
+      }
+    }
+    return {
+      name: preset.name,
+      description: preset.description,
+      mode: preset.config.mode === 'tile' ? '平铺' : '单点'
+    };
+  };
 
   const handleDownloadSingle = async () => {
     if (!activeImage) return;
@@ -96,10 +176,10 @@ export const WatermarkControls: React.FC = () => {
               ? 'bg-card text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
-          title="水印文字与字体"
+          title={t.watermark.tabs.text}
         >
           <Type className="w-3.5 h-3.5" />
-          <span>文字</span>
+          <span>{t.watermark.tabs.text}</span>
         </button>
 
         <button
@@ -109,10 +189,10 @@ export const WatermarkControls: React.FC = () => {
               ? 'bg-card text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
-          title="平铺网格与方向"
+          title={t.watermark.layout.modeLabel}
         >
           <Grid3X3 className="w-3.5 h-3.5" />
-          <span>排布</span>
+          <span>{t.watermark.tabs.layout}</span>
         </button>
 
         <button
@@ -122,10 +202,10 @@ export const WatermarkControls: React.FC = () => {
               ? 'bg-card text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
-          title="色彩透明度与效果"
+          title={t.watermark.tabs.style}
         >
           <Palette className="w-3.5 h-3.5" />
-          <span>效果</span>
+          <span>{t.watermark.tabs.style}</span>
         </button>
 
         <button
@@ -135,10 +215,10 @@ export const WatermarkControls: React.FC = () => {
               ? 'bg-card text-foreground shadow-xs'
               : 'text-muted-foreground hover:text-foreground'
           }`}
-          title="预设模版"
+          title={t.watermark.presets.title}
         >
           <Bookmark className="w-3.5 h-3.5" />
-          <span>预设</span>
+          <span>{t.watermark.tabs.presets}</span>
         </button>
 
         <button
@@ -148,10 +228,10 @@ export const WatermarkControls: React.FC = () => {
               ? 'bg-card text-foreground shadow-xs text-primary font-semibold'
               : 'text-muted-foreground hover:text-foreground'
           }`}
-          title="导出设置"
+          title={t.watermark.tabs.export}
         >
           <Download className="w-3.5 h-3.5" />
-          <span>导出</span>
+          <span>{t.watermark.tabs.export}</span>
         </button>
       </div>
 
@@ -163,53 +243,55 @@ export const WatermarkControls: React.FC = () => {
             {/* Watermark text textarea */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-foreground">水印文本 (支持多行回车)</label>
+                <label className="text-xs font-medium text-foreground">{t.watermark.text.label}</label>
                 <button
                   onClick={() => updateConfig({ text: '' })}
                   className="text-[11px] text-muted-foreground hover:text-destructive"
                 >
-                  清空
+                  {t.watermark.text.clear}
                 </button>
               </div>
               <textarea
                 value={config.text}
                 onChange={(e) => updateConfig({ text: e.target.value })}
                 rows={3}
-                placeholder="输入水印文字..."
+                placeholder={t.watermark.text.placeholder}
                 className="w-full text-xs p-2.5 rounded-lg border border-border bg-muted/40 focus:outline-none focus:ring-1 focus:ring-primary focus:bg-card resize-y"
               />
             </div>
 
             {/* Quick Macro Pills */}
             <div className="space-y-1.5">
-              <span className="text-[11px] font-medium text-muted-foreground">快速插入动态变量:</span>
+              <span className="text-[11px] font-medium text-muted-foreground">{t.watermark.text.macrosLabel}</span>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   onClick={() => insertMacro('{{date}}')}
                   className="px-2 py-0.5 rounded text-[11px] bg-muted hover:bg-muted/80 text-foreground border border-border/60 font-mono"
-                  title="插入当前日期 (如 2026-10-17)"
+                  title="2026-10-17"
                 >
-                  + 当前日期
+                  {t.watermark.text.dateMacro}
                 </button>
                 <button
                   onClick={() => insertMacro('{{time}}')}
                   className="px-2 py-0.5 rounded text-[11px] bg-muted hover:bg-muted/80 text-foreground border border-border/60 font-mono"
-                  title="插入当前时间"
                 >
-                  + 时间戳
+                  {t.watermark.text.timeMacro}
                 </button>
                 <button
                   onClick={() => insertMacro('{{filename}}')}
                   className="px-2 py-0.5 rounded text-[11px] bg-muted hover:bg-muted/80 text-foreground border border-border/60 font-mono"
-                  title="插入原图文件名"
                 >
-                  + 文件名
+                  {t.watermark.text.filenameMacro}
                 </button>
                 <button
-                  onClick={() => updateConfig({ text: '仅供业务核验使用\n严禁用于其他商业途径' })}
+                  onClick={() => updateConfig({ 
+                    text: language === 'zh'
+                      ? '仅供业务核验使用\n严禁用于其他商业途径'
+                      : 'For Identity Verification Only\nCommercial Use Strictly Prohibited'
+                  })}
                   className="px-2 py-0.5 rounded text-[11px] bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20"
                 >
-                  防盗免责声明
+                  {t.watermark.text.disclaimerPreset}
                 </button>
               </div>
             </div>
@@ -218,7 +300,7 @@ export const WatermarkControls: React.FC = () => {
 
             {/* Font Family */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">字体样式</label>
+              <label className="text-xs font-medium text-foreground">{t.watermark.text.fontFamily}</label>
               <select
                 value={config.fontFamily}
                 onChange={(e) => updateConfig({ fontFamily: e.target.value })}
@@ -226,7 +308,7 @@ export const WatermarkControls: React.FC = () => {
               >
                 {FONT_OPTIONS.map((font) => (
                   <option key={font.value} value={font.value}>
-                    {font.label}
+                    {getFontLabel(font)}
                   </option>
                 ))}
               </select>
@@ -234,7 +316,7 @@ export const WatermarkControls: React.FC = () => {
 
             {/* Font Size */}
             <Slider
-              label="字号大小 (Font Size)"
+              label={t.watermark.text.fontSize}
               value={config.fontSize}
               min={12}
               max={160}
@@ -245,7 +327,7 @@ export const WatermarkControls: React.FC = () => {
 
             {/* Font Weight */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">字重粗细 (Font Weight)</label>
+              <label className="text-xs font-medium text-foreground">{t.watermark.text.fontWeight}</label>
               <div className="grid grid-cols-4 gap-1.5">
                 {(['300', '400', '600', '900'] as const).map((w) => (
                   <button
@@ -257,7 +339,7 @@ export const WatermarkControls: React.FC = () => {
                         : 'bg-muted/50 border-border text-foreground hover:bg-muted'
                     }`}
                   >
-                    {w === '300' ? '细体' : w === '400' ? '常规' : w === '600' ? '粗体' : '极粗'}
+                    {getFontWeightLabel(w)}
                   </button>
                 ))}
               </div>
@@ -265,7 +347,7 @@ export const WatermarkControls: React.FC = () => {
 
             {/* Line Height & Letter Spacing */}
             <Slider
-              label="行间距 (Line Height)"
+              label={t.watermark.text.lineHeight}
               value={config.lineHeight}
               min={1.0}
               max={2.5}
@@ -275,7 +357,7 @@ export const WatermarkControls: React.FC = () => {
             />
 
             <Slider
-              label="字间距 (Letter Spacing)"
+              label={t.watermark.text.letterSpacing}
               value={config.letterSpacing}
               min={0}
               max={24}
@@ -291,7 +373,7 @@ export const WatermarkControls: React.FC = () => {
           <div className="space-y-4">
             {/* Mode Switch: Tile vs Single */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">水印排布模式</label>
+              <label className="text-xs font-medium text-foreground">{t.watermark.layout.modeLabel}</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => updateConfig({ mode: 'tile' })}
@@ -302,7 +384,7 @@ export const WatermarkControls: React.FC = () => {
                   }`}
                 >
                   <Layers className="w-4 h-4" />
-                  <span>全屏防伪平铺</span>
+                  <span>{t.watermark.layout.tileMode}</span>
                 </button>
 
                 <button
@@ -314,7 +396,7 @@ export const WatermarkControls: React.FC = () => {
                   }`}
                 >
                   <Dot className="w-4 h-4" />
-                  <span>单点定点水印</span>
+                  <span>{t.watermark.layout.singleMode}</span>
                 </button>
               </div>
             </div>
@@ -322,7 +404,7 @@ export const WatermarkControls: React.FC = () => {
             {/* Rotation Angle Slider & Presets */}
             <div className="space-y-2 pt-2">
               <Slider
-                label="旋转方向与角度 (Rotation)"
+                label={t.watermark.layout.rotation}
                 value={config.rotate}
                 min={-180}
                 max={180}
@@ -353,12 +435,8 @@ export const WatermarkControls: React.FC = () => {
             {/* Mode-specific settings */}
             {config.mode === 'tile' ? (
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-foreground">平铺间距与密度</span>
-                </div>
-
                 <Slider
-                  label="水平间距 (Gap X)"
+                  label={t.watermark.layout.gapX}
                   value={config.gapX}
                   min={20}
                   max={300}
@@ -368,7 +446,7 @@ export const WatermarkControls: React.FC = () => {
                 />
 
                 <Slider
-                  label="垂直间距 (Gap Y)"
+                  label={t.watermark.layout.gapY}
                   value={config.gapY}
                   min={20}
                   max={300}
@@ -378,8 +456,8 @@ export const WatermarkControls: React.FC = () => {
                 />
 
                 <Switch
-                  label="错位交错排布 (Stagger Brick Layout)"
-                  description="相邻两行文字呈50%交错分布，防伪与美观度更高"
+                  label={t.watermark.layout.stagger}
+                  description={t.watermark.layout.staggerDesc}
                   checked={config.stagger}
                   onCheckedChange={(stagger) => updateConfig({ stagger })}
                 />
@@ -387,7 +465,7 @@ export const WatermarkControls: React.FC = () => {
             ) : (
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">九宫格定位</label>
+                  <label className="text-xs font-semibold text-foreground">{t.watermark.layout.singleAnchor}</label>
                   <div className="grid grid-cols-3 gap-1.5 p-2 bg-muted/40 rounded-xl border border-border">
                     {gridPositions.map((pos) => (
                       <button
@@ -408,7 +486,7 @@ export const WatermarkControls: React.FC = () => {
                 </div>
 
                 <Slider
-                  label="水平边距偏移 (Offset X)"
+                  label={t.watermark.layout.offsetX}
                   value={config.offsetX}
                   min={0}
                   max={300}
@@ -418,7 +496,7 @@ export const WatermarkControls: React.FC = () => {
                 />
 
                 <Slider
-                  label="垂直边距偏移 (Offset Y)"
+                  label={t.watermark.layout.offsetY}
                   value={config.offsetY}
                   min={0}
                   max={300}
@@ -437,7 +515,7 @@ export const WatermarkControls: React.FC = () => {
             {/* Color & Quick Palette */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-foreground">文字颜色与透明度</label>
+                <label className="text-xs font-medium text-foreground">{t.watermark.style.colorAndOpacity}</label>
                 <div className="flex items-center gap-1.5">
                   <input
                     type="color"
@@ -461,7 +539,7 @@ export const WatermarkControls: React.FC = () => {
                       className="w-3 h-3 rounded-full border border-black/20 shrink-0" 
                       style={{ backgroundColor: pal.color }} 
                     />
-                    <span className="truncate">{pal.label}</span>
+                    <span className="truncate">{getColorLabel(pal.color)}</span>
                   </button>
                 ))}
               </div>
@@ -469,7 +547,7 @@ export const WatermarkControls: React.FC = () => {
 
             {/* Opacity Slider */}
             <Slider
-              label="水印透明程度 (Opacity)"
+              label={t.watermark.style.opacity}
               value={config.opacity}
               min={0}
               max={100}
@@ -483,8 +561,8 @@ export const WatermarkControls: React.FC = () => {
             {/* Text Stroke / Outline */}
             <div className="p-3 rounded-xl bg-muted/30 border border-border/80 space-y-2.5">
               <Switch
-                label="文字描边轮廓 (Stroke)"
-                description="使浅色白字在浅色图片上依然轮廓清晰可辨"
+                label={t.watermark.style.stroke}
+                description={t.watermark.style.strokeDesc}
                 checked={config.stroke.enabled}
                 onCheckedChange={(enabled) => 
                   updateConfig({ stroke: { ...config.stroke, enabled } })
@@ -494,7 +572,7 @@ export const WatermarkControls: React.FC = () => {
               {config.stroke.enabled && (
                 <div className="space-y-2.5 pt-2 border-t border-border/40">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">描边颜色</span>
+                    <span className="text-xs text-muted-foreground">{t.watermark.style.strokeColor}</span>
                     <input
                       type="color"
                       value={config.stroke.color}
@@ -506,7 +584,7 @@ export const WatermarkControls: React.FC = () => {
                   </div>
 
                   <Slider
-                    label="描边粗细 (Width)"
+                    label={t.watermark.style.strokeWidth}
                     value={config.stroke.width}
                     min={0.5}
                     max={8}
@@ -523,8 +601,8 @@ export const WatermarkControls: React.FC = () => {
             {/* Text Shadow */}
             <div className="p-3 rounded-xl bg-muted/30 border border-border/80 space-y-2.5">
               <Switch
-                label="文字立体阴影 (Shadow)"
-                description="营造水印立体层次感，防止与背景混杂"
+                label={t.watermark.style.shadow}
+                description={t.watermark.style.shadowDesc}
                 checked={config.shadow.enabled}
                 onCheckedChange={(enabled) => 
                   updateConfig({ shadow: { ...config.shadow, enabled } })
@@ -534,7 +612,7 @@ export const WatermarkControls: React.FC = () => {
               {config.shadow.enabled && (
                 <div className="space-y-2.5 pt-2 border-t border-border/40">
                   <Slider
-                    label="阴影模糊半径 (Blur)"
+                    label={t.watermark.style.shadowBlur}
                     value={config.shadow.blur}
                     min={0}
                     max={20}
@@ -547,7 +625,7 @@ export const WatermarkControls: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-2">
                     <Slider
-                      label="偏移 X"
+                      label={t.watermark.style.shadowOffsetX}
                       value={config.shadow.offsetX}
                       min={-15}
                       max={15}
@@ -558,7 +636,7 @@ export const WatermarkControls: React.FC = () => {
                       }
                     />
                     <Slider
-                      label="偏移 Y"
+                      label={t.watermark.style.shadowOffsetY}
                       value={config.shadow.offsetY}
                       min={-15}
                       max={15}
@@ -575,18 +653,30 @@ export const WatermarkControls: React.FC = () => {
 
             {/* Blend Mode */}
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">色彩混合模式 (Blend Mode)</label>
+              <label className="text-xs font-medium text-foreground">{t.watermark.style.blendMode}</label>
               <select
                 value={config.blendMode}
                 onChange={(e) => updateConfig({ blendMode: e.target.value as any })}
                 className="w-full h-8 px-2 text-xs rounded-lg border border-border bg-muted/40 focus:outline-none focus:ring-1 focus:ring-primary"
               >
-                <option value="source-over">正常标准 (Source Over)</option>
-                <option value="screen">滤色提亮 (Screen - 适合白透)</option>
-                <option value="overlay">叠加融合 (Overlay)</option>
-                <option value="soft-light">柔光 (Soft Light)</option>
-                <option value="difference">差值反相 (Difference)</option>
-                <option value="multiply">正片叠底 (Multiply)</option>
+                <option value="source-over">
+                  {language === 'zh' ? '正常标准 (Source Over)' : 'Normal (Source Over)'}
+                </option>
+                <option value="screen">
+                  {language === 'zh' ? '滤色提亮 (Screen - 适合白透)' : 'Screen (Bright White)'}
+                </option>
+                <option value="overlay">
+                  {language === 'zh' ? '叠加融合 (Overlay)' : 'Overlay'}
+                </option>
+                <option value="soft-light">
+                  {language === 'zh' ? '柔光 (Soft Light)' : 'Soft Light'}
+                </option>
+                <option value="difference">
+                  {language === 'zh' ? '差值反相 (Difference)' : 'Difference'}
+                </option>
+                <option value="multiply">
+                  {language === 'zh' ? '正片叠底 (Multiply)' : 'Multiply'}
+                </option>
               </select>
             </div>
           </div>
@@ -596,46 +686,49 @@ export const WatermarkControls: React.FC = () => {
         {activeTab === 'presets' && (
           <div className="space-y-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs font-semibold text-foreground">一键预设模版库</span>
+              <span className="text-xs font-semibold text-foreground">{t.watermark.presets.title}</span>
               <button
                 onClick={resetConfig}
                 className="text-[11px] text-muted-foreground hover:text-primary flex items-center gap-1"
               >
                 <RefreshCw className="w-3 h-3" />
-                重置为默认
+                {t.watermark.presets.resetDefault}
               </button>
             </div>
 
             <div className="space-y-2.5">
-              {WATERMARK_PRESETS.map((preset) => (
-                <div
-                  key={preset.id}
-                  onClick={() => applyPreset(preset)}
-                  className="p-3 rounded-xl border border-border/80 bg-muted/30 hover:border-primary/60 hover:bg-card cursor-pointer transition-all space-y-1.5 group"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
-                      {preset.name}
-                    </span>
-                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground">
-                      {preset.config.mode === 'tile' ? '平铺' : '单点'}
-                    </span>
-                  </div>
+              {WATERMARK_PRESETS.map((preset) => {
+                const info = getPresetDetails(preset);
+                return (
+                  <div
+                    key={preset.id}
+                    onClick={() => applyPreset(preset)}
+                    className="p-3 rounded-xl border border-border/80 bg-muted/30 hover:border-primary/60 hover:bg-card cursor-pointer transition-all space-y-1.5 group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-foreground group-hover:text-primary transition-colors">
+                        {info.name}
+                      </span>
+                      <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-muted border border-border/60 text-muted-foreground">
+                        {info.mode}
+                      </span>
+                    </div>
 
-                  <p className="text-[11px] text-muted-foreground line-clamp-2">
-                    {preset.description}
-                  </p>
+                    <p className="text-[11px] text-muted-foreground line-clamp-2">
+                      {info.description}
+                    </p>
 
-                  <div className="pt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span className="font-mono text-[10px]">
-                      旋转 {preset.config.rotate ?? 0}° · 透明度 {preset.config.opacity}%
-                    </span>
-                    <span className="text-primary text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                      应用模版 →
-                    </span>
+                    <div className="pt-1 flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span className="font-mono text-[10px]">
+                        {language === 'zh' ? '旋转' : 'Rotate'} {preset.config.rotate ?? 0}° · {language === 'zh' ? '透明度' : 'Opacity'} {preset.config.opacity}%
+                      </span>
+                      <span className="text-primary text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                        {t.watermark.presets.applyPreset}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -644,12 +737,12 @@ export const WatermarkControls: React.FC = () => {
         {activeTab === 'export' && (
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">导出图像格式</label>
+              <label className="text-xs font-medium text-foreground">{t.watermark.export.format}</label>
               <div className="grid grid-cols-3 gap-1.5">
                 {[
-                  { id: 'image/png', label: 'PNG (无损)' },
-                  { id: 'image/jpeg', label: 'JPEG (体积小)' },
-                  { id: 'image/webp', label: 'WebP (现代高效)' },
+                  { id: 'image/png', label: 'PNG' + (language === 'zh' ? ' (无损)' : ' (Lossless)') },
+                  { id: 'image/jpeg', label: 'JPEG' + (language === 'zh' ? ' (压缩)' : ' (Fast)') },
+                  { id: 'image/webp', label: 'WebP' + (language === 'zh' ? ' (高效)' : ' (Modern)') },
                 ].map((fmt) => (
                   <button
                     key={fmt.id}
@@ -668,7 +761,7 @@ export const WatermarkControls: React.FC = () => {
 
             {config.exportFormat !== 'image/png' && (
               <Slider
-                label="压缩质量 (Quality)"
+                label={t.watermark.export.quality}
                 value={config.exportQuality}
                 min={10}
                 max={100}
@@ -679,13 +772,13 @@ export const WatermarkControls: React.FC = () => {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">输出分辨率缩放 (Scale)</label>
+              <label className="text-xs font-medium text-foreground">{t.watermark.export.scale}</label>
               <div className="grid grid-cols-4 gap-1.5">
                 {[
                   { val: 0.5, label: '0.5x' },
-                  { val: 1, label: '1.0x (原始)' },
+                  { val: 1, label: language === 'zh' ? '1.0x (原始)' : '1.0x (Original)' },
                   { val: 1.5, label: '1.5x' },
-                  { val: 2, label: '2.0x (超清)' },
+                  { val: 2, label: language === 'zh' ? '2.0x (超清)' : '2.0x (HD)' },
                 ].map((sc) => (
                   <button
                     key={sc.val}
@@ -703,7 +796,7 @@ export const WatermarkControls: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-foreground">文件名导出规则</label>
+              <label className="text-xs font-medium text-foreground">{t.watermark.export.filenameRule}</label>
               <input
                 type="text"
                 value={config.filenamePattern}
@@ -712,7 +805,7 @@ export const WatermarkControls: React.FC = () => {
                 placeholder="{name}_watermarked"
               />
               <span className="text-[10px] text-muted-foreground block">
-                支持占位符: <code className="bg-muted px-1 rounded text-primary">{'{name}'}</code> (原文件名), <code className="bg-muted px-1 rounded text-primary">{'{ext}'}</code> (扩展名)
+                {t.watermark.export.filenameHint}
               </span>
             </div>
 
@@ -728,7 +821,7 @@ export const WatermarkControls: React.FC = () => {
                 className="w-full gap-2 text-sm shadow-md"
               >
                 <Download className="w-4 h-4" />
-                <span>下载当前图片</span>
+                <span>{t.watermark.export.downloadCurrent}</span>
               </Button>
 
               <Button
@@ -739,7 +832,11 @@ export const WatermarkControls: React.FC = () => {
                 className="w-full gap-2 text-sm border-primary/40 hover:bg-primary/10 text-primary"
               >
                 <Archive className="w-4 h-4" />
-                <span>{isExportingBatch ? `打包中 ${batchProgress}%` : `批量打包全部 (${images.length} 张)`}</span>
+                <span>
+                  {isExportingBatch 
+                    ? `${t.watermark.export.packaging} ${batchProgress}%` 
+                    : (language === 'zh' ? `批量打包全部 (${images.length} 张)` : `Export All as ZIP (${images.length})`)}
+                </span>
               </Button>
             </div>
           </div>
@@ -754,7 +851,7 @@ export const WatermarkControls: React.FC = () => {
           onClick={resetConfig}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
-          重置参数
+          {t.common.reset}
         </Button>
 
         <Button
@@ -765,7 +862,7 @@ export const WatermarkControls: React.FC = () => {
           className="text-xs gap-1.5 h-8"
         >
           <Download className="w-3.5 h-3.5" />
-          <span>保存图片</span>
+          <span>{t.common.download}</span>
         </Button>
       </div>
     </div>

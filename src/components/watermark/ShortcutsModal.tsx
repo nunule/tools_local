@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { X, Keyboard, Command } from 'lucide-react';
+import { X, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useI18n } from '@/i18n';
 
 interface ShortcutsModalProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface ShortcutsModalProps {
 }
 
 export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose }) => {
+  const { t } = useI18n();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -21,13 +24,13 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
   if (!isOpen) return null;
 
   const shortcuts = [
-    { key: 'Cmd/Ctrl + V', desc: '直接从剪贴板粘贴截图或图片' },
-    { key: 'Cmd/Ctrl + S', desc: '快速导出保存当前已加水印图片' },
-    { key: '滚轮 (Wheel)', desc: '在画布上平滑缩放视图 (10% ~ 400%)' },
-    { key: '鼠标左键拖拽', desc: '平移移动大型高分辨率图片画布' },
-    { key: '按住对比 (C)', desc: '临时切换查看原始无水印图像进行效果对比' },
-    { key: '双击重置', desc: '恢复 100% 原始缩放并居中' },
-    { key: 'Esc', desc: '关闭当前浮层弹窗' },
+    { key: 'Cmd/Ctrl + V', desc: t.shortcuts.cmdV },
+    { key: 'Cmd/Ctrl + S', desc: t.shortcuts.cmdS },
+    { key: 'Wheel', desc: t.shortcuts.wheel },
+    { key: 'Drag', desc: t.shortcuts.drag },
+    { key: 'C', desc: t.shortcuts.compareKey },
+    { key: 'Double Click', desc: t.shortcuts.doubleClick },
+    { key: 'Esc', desc: t.shortcuts.esc },
   ];
 
   return (
@@ -37,7 +40,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         <div className="px-5 py-4 border-b border-border flex items-center justify-between bg-muted/20">
           <div className="flex items-center gap-2">
             <Keyboard className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">桌面与键盘快捷键</h3>
+            <h3 className="text-sm font-bold text-foreground">{t.shortcuts.title}</h3>
           </div>
           <Button
             variant="ghost"
@@ -64,7 +67,7 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
         {/* Footer */}
         <div className="px-5 py-3 border-t border-border bg-muted/20 flex justify-end">
           <Button variant="default" size="sm" onClick={onClose} className="text-xs">
-            知道了
+            {t.shortcuts.close}
           </Button>
         </div>
       </div>

@@ -14,8 +14,10 @@ import {
 import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { Button } from '@/components/ui/button';
 import { WatermarkConfig } from '@/types/watermark';
+import { useI18n } from '@/i18n';
 
 export const CodeMirrorConfigView: React.FC = () => {
+  const { t } = useI18n();
   const { config, updateConfig, theme } = useWatermarkStore();
   const [jsonText, setJsonText] = useState('');
   const [copied, setCopied] = useState(false);
@@ -32,13 +34,13 @@ export const CodeMirrorConfigView: React.FC = () => {
       setError(null);
       const parsed = JSON.parse(jsonText) as WatermarkConfig;
       if (typeof parsed !== 'object' || parsed === null) {
-        throw new Error('配置必须是一个有效的 JSON 对象');
+        throw new Error(t.configEditor.mustBeObject);
       }
       updateConfig(parsed);
-      setSuccessMsg('配置已应用');
+      setSuccessMsg(t.configEditor.appliedSuccess);
       setTimeout(() => setSuccessMsg(null), 3000);
     } catch (err: any) {
-      setError(err.message || 'JSON 解析错误，请检查语法');
+      setError(err.message || t.configEditor.parseError);
     }
   };
 
@@ -70,7 +72,7 @@ export const CodeMirrorConfigView: React.FC = () => {
         setJsonText(text);
         setError(null);
       } catch (err) {
-        setError('导入的文件非有效 JSON');
+        setError(t.configEditor.invalidFile);
       }
     };
     reader.readAsText(file);
@@ -84,7 +86,7 @@ export const CodeMirrorConfigView: React.FC = () => {
         <div className="flex items-center gap-2">
           <FileCode2 className="w-4 h-4 text-indigo-400" />
           <span className="text-xs font-semibold text-foreground">
-            JSON 配置
+            {t.configEditor.title}
           </span>
         </div>
 
@@ -110,7 +112,7 @@ export const CodeMirrorConfigView: React.FC = () => {
             />
             <Button variant="outline" size="sm" className="h-7 text-xs gap-1 pointer-events-none">
               <Upload className="w-3 h-3" />
-              <span>导入 JSON</span>
+              <span>{t.configEditor.importJson}</span>
             </Button>
           </label>
 
@@ -121,7 +123,7 @@ export const CodeMirrorConfigView: React.FC = () => {
             className="h-7 text-xs gap-1"
           >
             <Download className="w-3 h-3" />
-            <span>导出 JSON</span>
+            <span>{t.configEditor.exportJson}</span>
           </Button>
 
           <Button
@@ -131,7 +133,7 @@ export const CodeMirrorConfigView: React.FC = () => {
             className="h-7 text-xs gap-1"
           >
             {copied ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
-            <span>{copied ? '已复制' : '复制'}</span>
+            <span>{copied ? t.common.copied : t.common.copy}</span>
           </Button>
 
           <Button
@@ -141,7 +143,7 @@ export const CodeMirrorConfigView: React.FC = () => {
             className="h-7 text-xs gap-1 shadow-sm"
           >
             <Play className="w-3 h-3 fill-current" />
-            <span>应用到画布</span>
+            <span>{t.configEditor.applyToCanvas}</span>
           </Button>
         </div>
       </div>
@@ -153,17 +155,12 @@ export const CodeMirrorConfigView: React.FC = () => {
           height="100%"
           theme={theme === 'dark' ? oneDark : undefined}
           extensions={[json()]}
-          onChange={(value) => {
-            setJsonText(value);
-            setError(null);
+          onChange={(val) => {
+            setJsonText(val);
+            if (error) setError(null);
           }}
           className="h-full border-none focus:outline-none"
         />
-      </div>
-
-      {/* Bottom Footer hint */}
-      <div className="h-8 border-t border-border bg-muted/20 px-4 flex items-center justify-between text-[11px] text-muted-foreground select-none">
-        <span>修改参数后，点击「应用到画布」。</span>
       </div>
     </div>
   );

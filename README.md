@@ -1,55 +1,142 @@
 # tools local
 
-本地离线多功能图像与隐私安全工具箱。所有操作均在浏览器本地端完成，零网络上传，断网亦可完整使用。
+<p align="center">
+  <img src="public/icon.svg" width="84" height="84" alt="tools local logo" />
+</p>
 
-## 核心功能模块 (第一批全集)
+<p align="center">
+  <strong>100% Client-Side Offline Image Privacy & Watermark Toolbox</strong><br>
+  Zero network uploads · Pure in-browser rendering · Complete offline functionality
+</p>
 
-### 1. 图片水印工作室
-- 添加文字水印，支持多行文本与动态变量 `{{date}}`、`{{time}}`、`{{filename}}`。
-- 支持全屏 50% 错位交错防伪平铺与九宫格定位。
-- 支持无级调节字号、旋转方向（-180°~180°）、透明度、文字描边与立体阴影。
-- 批量多图导入、剪贴板粘贴 (`Cmd/Ctrl + V`)、一键打包导出 ZIP。
+<p align="center">
+  <a href="README.md"><strong>English</strong></a> · <a href="README.zh-CN.md"><strong>简体中文</strong></a>
+</p>
 
-### 2. 隐私遮挡 (Privacy Redaction)
-- 支持框选（矩形）与自由涂抹（笔刷）两种形状。
-- 支持三类脱敏效果：**马赛克 (Pixelate)**、**高斯模糊 (Gaussian Blur)**、**纯色覆盖 (Solid Fill)**。
-- 颗粒大小、模糊半径、笔刷粗细自由调节。
-- 撤销 (`Cmd/Ctrl + Z`)、清空、按住对比原图，底层像素级不可逆覆盖。
+---
 
-### 3. 照片信息清理 (EXIF Inspector & Cleaner)
-- 离线解析手机/数码相机照片的完整 EXIF 元数据。
-- 自动评估隐私风险等级：高精度 GPS 经纬度位置检测、拍摄时间戳、设备序列号与相机型号。
-- 一键擦除全部 EXIF/GPS 敏感信息，支持单张下载与多图批量打包 ZIP。
+## 🌟 Overview
 
-### 4. 截图隐私处理 (Screenshot Privacy)
-- 专为手机与电脑截屏打造的快速去敏感信息工具。
-- 一键快速预设裁切：裁去 iOS 灵动岛/刘海状态栏、裁去 Android 顶部状态栏、裁去底部横条 (Home Bar)、裁去浏览器顶部标签栏。
-- 四边自由像素级裁剪 (Top/Bottom/Left/Right)。
-- 快速头像遮罩（圆形打码）与账号/昵称横条打码。
+**tools local** is a modern, high-performance, and privacy-first local image utility suite built for developers, photographers, businesses, and everyday users. All image processing—watermarking, redacting, EXIF stripping, screenshot trimming, and identity copy generation—takes place **100% inside your browser memory** using HTML5 Canvas 2D and modern Web APIs.
 
-### 5. 证件分享副本 (ID Certified Copy)
-- 制作身份证、驾驶证、护照、银行卡安全分享副本。
-- 敏感字段一键脱敏：遮挡身份证号后 4 位、遮挡详细门牌住址、遮挡出生年月日。
-- 法定防盗用途水印：自动覆写“仅供 [业务用途] [机构] 使用，有效期至 YYYY-MM-DD，他用无效，复印无效”。
-- 支持标准 A4 核验纸张排版（带官方抬头与律法免责声明）与双面并排排版。
+No images or metadata are ever transmitted to any external server. You can safely disconnect your internet or use it in airplane mode without any loss of functionality.
 
-## 开发与构建
+---
 
-使用 Node.js 22 或兼容版本。
+## 🚀 Key Modules
+
+### 1. Image Watermark Studio (`/watermark`)
+- **Full Text & Layout Control**: Multi-line custom text, dynamic macros (`{{date}}`, `{{time}}`, `{{filename}}`), and one-click legal disclaimers.
+- **Smart Tiling & 9-Grid Positioning**: 50% staggered brick layout (anti-crop protection) and 9-grid anchor positioning with precise pixel offsets.
+- **Visual Stylization**: Real-time opacity adjustment (0–100%), custom outline stroke (to ensure white text remains readable on white images), drop shadows with 3D depth, and blend modes (`Screen`, `Overlay`, `Soft Light`, `Multiply`, `Difference`).
+- **Batch Processing**: Drag-and-drop multiple images, clipboard paste (`Cmd/Ctrl + V`), filmstrip queue management, and concurrent ZIP export.
+- **One-Click Presets**: Tiled anti-counterfeiting, KYC certificate stamp, photographer watermark, center sample stamp, and high-density security grid.
+
+### 2. Privacy Redaction Studio (`/redact`)
+- **Dual Selection Tools**: Precise rectangular marquee selection and freehand brush drawing.
+- **Three Irreversible Redaction Effects**:
+  - **Pixelate Mosaic**: Adjustable block size (6px to 36px).
+  - **Hardware Gaussian Blur**: Smooth gradient blur radius (6px to 40px).
+  - **Solid Color Fill**: Pure black, white, slate gray, and warning red.
+- **Non-Destructive Workflow**: Undo history (`Cmd/Ctrl + Z`), canvas clear, hold-to-compare original preview, and pixel-level permanent burn-in on export.
+
+### 3. Photo EXIF & GPS Cleaner (`/exif`)
+- **Full Binary Inspection**: Deep inspection of raw EXIF tags using `exifr` without uploading files.
+- **Automated Risk Assessment**: Flags high-precision GPS coordinates (latitude, longitude, altitude), camera device models, lens specs, and exact timestamps.
+- **Zero-Loss Scrubbing**: Strips all sensitive metadata tags by re-encoding via HTML5 Canvas.
+- **Batch Stripping**: One-click bulk stripping and automatic packaging into a clean ZIP archive.
+
+### 4. Screenshot Privacy Trimmer (`/screenshot`)
+- **One-Click Smart Crop Presets**:
+  - Trim iOS Dynamic Island / notch status bar and Android status bar.
+  - Trim bottom system navigation bar (Home Bar).
+  - Trim browser top bar (hides active URL tabs and personal bookmarks).
+- **Fine-Tuning Margin Sliders**: Independent pixel-level controls for top, bottom, left, and right margins.
+- **One-Click Masking**: Click anywhere on the screenshot to instantly stamp circular avatar blur or username redaction bars.
+
+### 5. ID Certified Copy Studio (`/id-copy`)
+- **Document Protection**: Tailored for identity cards, driver's licenses, passports, and permits.
+- **Sensitive Field Redaction**: Toggle switches to mask the last 4 digits of ID numbers, street/apartment address details, or birthdates.
+- **Mandatory Purpose Watermark**: Automatically overlays legal protection text: *"For [Purpose] with [Organization] only. Valid until YYYY-MM-DD. Copies and other uses strictly prohibited."*
+- **A4 Dual-Sided Print Sheet**: Generates an official standard A4 compliance layout with front and back sides positioned with formal disclaimers.
+
+---
+
+## ⌨️ Desktop Shortcuts & Gestures
+
+| Shortcut / Gesture | Action |
+|---|---|
+| `Cmd / Ctrl + V` | Paste image or screenshot directly from clipboard |
+| `Cmd / Ctrl + S` | Download / save currently processed image |
+| `Cmd / Ctrl + Z` | Undo last redaction or mask |
+| `Mouse Wheel` | Smooth zoom in and out (10% to 400%) |
+| `Left Mouse Drag` | Pan and navigate high-resolution canvas |
+| `C` (Hold) | Hold to temporarily compare with original image |
+| `Double Click` | Reset viewport zoom to 100% and center canvas |
+| `Esc` | Close active dialog or modal |
+
+---
+
+## 🌐 Internationalization (i18n)
+
+Full English and Simplified Chinese localization is supported out-of-the-box:
+- **Instant Language Switching**: Toggle between `EN` and `中` in the top header with zero page reload.
+- **Auto-Detection**: Defaults to your system/browser language preference (`navigator.language`).
+- **Persistent State**: User language preference is stored locally via Zustand localStorage persistence.
+- **Complete Type-Safety**: Strictly typed schema in `src/i18n/types.ts` ensuring all keys exist in both locales.
+
+---
+
+## 🛠️ Tech Stack & Architecture
+
+- **Frontend Core**: [React 19](https://react.dev/), [TypeScript 5](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite 6](https://vitejs.dev/) (fast HMR and optimized chunk splitting)
+- **Styling & UI**: [Tailwind CSS 4](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) design system, CSS custom variables
+- **State Management**: [Zustand 5](https://zustand-demo.pmnd.rs/) with localStorage persistence
+- **Routing**: [Wouter](https://github.com/molefrog/wouter) lightweight hash/path routing
+- **Code Editor**: [CodeMirror 6](https://codemirror.net/) with JSON syntax highlighting and dark mode
+- **Metadata & Compression**: [exifr](https://github.com/MikeKovarik/exifr) for binary EXIF inspection, [JSZip](https://stuk.github.io/jszip/) for in-browser concurrent archiving
+- **Testing**: [Vitest](https://vitest.dev/), [@testing-library/react](https://testing-library.com/), [Playwright](https://playwright.dev/)
+
+---
+
+## 💻 Development & Build
+
+### Prerequisites
+- Node.js 20 or 22 (`nvm use 22`)
+- npm 10+
+
+### Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/your-username/tools_with_local.git
+cd tools_with_local
+
+# Install dependencies
 npm install
-npm run dev          # 启动开发服务 http://localhost:3000
-npm test             # 运行 Vitest 单元与组件测试 (13项测试全部通过)
-npm run build        # TypeScript 类型检查与 Vite 生产打包
+
+# Start development server
+npm run dev
+# -> Local server running at http://localhost:3000/
+
+# Run Vitest test suite
+npm test
+
+# Build production bundle with TypeScript checking
+npm run build
 ```
 
-## 技术架构
+---
 
-- 前端框架：**React 19、TypeScript**
-- 构建工具：**Vite 6**
-- 界面样式：**Tailwind CSS 4、shadcn/ui 设计规范**
-- 状态管理：**Zustand 5**
-- 代码编辑器：**CodeMirror 6** (`@uiw/react-codemirror`)
-- 测试框架：**Vitest、Testing Library、Playwright**
-- 核心离线库：**HTML5 Canvas 2D、exifr、JSZip、canvas-confetti**
+## 🔒 Privacy & Security Guarantee
+
+1. **Zero External API Calls**: The application makes no telemetry, analytics, or file upload network requests.
+2. **In-Memory Rendering**: Files are read via the standard Web `FileReader` and rendered directly on an HTML5 `<canvas>`.
+3. **Irreversible Redactions**: Redacted regions have their underlying pixel values permanently modified. Unlike PDF shape annotations, pixel values cannot be recovered by removing layers.
+
+---
+
+## 📄 License
+
+MIT License © 2026 tools local contributors.

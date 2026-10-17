@@ -1,10 +1,17 @@
 import React from 'react';
-import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { WatermarkControls } from '@/components/watermark/WatermarkControls';
+import { useI18nStore } from '@/i18n';
 
 describe('WatermarkControls Component', () => {
-  it('renders tab buttons properly', () => {
+  beforeEach(() => {
+    act(() => {
+      useI18nStore.getState().setLanguage('zh');
+    });
+  });
+
+  it('renders tab buttons properly in Chinese', () => {
     render(<WatermarkControls />);
 
     expect(screen.getByText('文字')).toBeInTheDocument();
@@ -14,7 +21,7 @@ describe('WatermarkControls Component', () => {
     expect(screen.getByText('导出')).toBeInTheDocument();
   });
 
-  it('switches between tabs on click', () => {
+  it('switches between tabs on click in Chinese', () => {
     render(<WatermarkControls />);
 
     // Click '排布' tab
@@ -35,5 +42,25 @@ describe('WatermarkControls Component', () => {
     expect(screen.getByText('一键预设模版库')).toBeInTheDocument();
     expect(screen.getByText('防盗用全屏平铺')).toBeInTheDocument();
     expect(screen.getByText('证件审核专用')).toBeInTheDocument();
+  });
+
+  it('supports English internationalization properly', () => {
+    act(() => {
+      useI18nStore.getState().setLanguage('en');
+    });
+
+    render(<WatermarkControls />);
+
+    expect(screen.getByText('Text')).toBeInTheDocument();
+    expect(screen.getByText('Layout')).toBeInTheDocument();
+    expect(screen.getByText('Style')).toBeInTheDocument();
+    expect(screen.getByText('Presets')).toBeInTheDocument();
+    expect(screen.getByText('Export')).toBeInTheDocument();
+
+    const presetsTab = screen.getByText('Presets');
+    fireEvent.click(presetsTab);
+
+    expect(screen.getByText('One-Click Presets Library')).toBeInTheDocument();
+    expect(screen.getByText('Confidential Tiled')).toBeInTheDocument();
   });
 });

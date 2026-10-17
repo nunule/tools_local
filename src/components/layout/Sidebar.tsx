@@ -6,7 +6,6 @@ import {
   Camera, 
   Crop, 
   CreditCard, 
-  ShieldCheck, 
   HardDrive, 
   Cpu, 
   SlidersHorizontal,
@@ -18,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ActiveToolTab } from '@/types/privacyTools';
 import { BrandIcon } from '@/components/brand/BrandIcon';
+import { useI18n } from '@/i18n';
 
 export const Sidebar: React.FC = () => {
   const { 
@@ -28,6 +28,8 @@ export const Sidebar: React.FC = () => {
     images 
   } = useWatermarkStore();
 
+  const { t, language } = useI18n();
+
   if (!sidebarOpen) {
     return (
       <aside className="w-12 border-r border-border bg-card/60 flex flex-col items-center py-3 justify-between z-20 shrink-0">
@@ -35,13 +37,13 @@ export const Sidebar: React.FC = () => {
           variant="ghost"
           size="icon"
           onClick={() => setSidebarOpen(true)}
-          title="展开侧边栏"
+          title="Open Sidebar"
           className="h-8 w-8 text-muted-foreground hover:text-foreground"
         >
           <SlidersHorizontal className="w-4 h-4" />
         </Button>
         <div className="text-[10px] text-muted-foreground rotate-90 font-mono tracking-widest whitespace-nowrap">
-          OFFLINE
+          {t.common.offlineNotice}
         </div>
       </aside>
     );
@@ -50,56 +52,52 @@ export const Sidebar: React.FC = () => {
   const primaryTools: { id: ActiveToolTab; name: string; desc: string; icon: React.ReactNode; badge?: string }[] = [
     {
       id: 'watermark',
-      name: '图片水印工作室',
-      desc: '白透防盗水印 · 平铺错位排布',
+      name: t.nav.watermark,
+      desc: language === 'zh' ? '白透防盗水印 · 平铺错位排布' : 'Tile & single watermark studio',
       icon: <Stamp className="w-4 h-4 text-teal-500" />,
-      badge: images.length > 0 ? `${images.length}张` : 'Live',
+      badge: images.length > 0 ? `${images.length}` : undefined,
     },
     {
       id: 'redact',
-      name: '敏感隐私遮挡',
-      desc: '框选涂抹 · 纯色/马赛克/模糊',
+      name: t.nav.redact,
+      desc: language === 'zh' ? '框选涂抹 · 纯色/马赛克/模糊' : 'Box & brush blur/mosaic',
       icon: <Paintbrush className="w-4 h-4 text-sky-500" />,
-      badge: '第一批',
     },
     {
       id: 'exif',
-      name: '照片信息清理',
-      desc: '查看并抹除定位GPS/时间/设备',
+      name: t.nav.exif,
+      desc: language === 'zh' ? '查看并抹除定位GPS/时间/设备' : 'Wipe GPS & hardware metadata',
       icon: <Camera className="w-4 h-4 text-amber-500" />,
-      badge: '第一批',
     },
     {
       id: 'screenshot',
-      name: '截图隐私处理',
-      desc: '裁状态栏/通知 · 遮头像与账号',
+      name: t.nav.screenshot,
+      desc: language === 'zh' ? '裁状态栏/通知 · 遮头像与账号' : 'Trim status bar & mask avatars',
       icon: <Crop className="w-4 h-4 text-indigo-500" />,
-      badge: '第一批',
     },
     {
       id: 'id-copy',
-      name: '证件分享副本',
-      desc: '身份证/驾照脱敏 · 防盗用途水印',
+      name: t.nav.idCopy,
+      desc: language === 'zh' ? '证件脱敏 · 防盗用途水印' : 'ID card copy & purpose watermark',
       icon: <CreditCard className="w-4 h-4 text-rose-500" />,
-      badge: '第一批',
     },
   ];
 
   return (
     <aside className="w-64 border-r border-border bg-card/60 backdrop-blur-md flex flex-col justify-between z-20 select-none shrink-0 transition-all">
       <div className="flex flex-col overflow-y-auto">
-        {/* Category: 图像隐私工具箱 (第一批) */}
+        {/* Category: 图像隐私工具箱 */}
         <div className="p-3">
           <div className="flex items-center justify-between px-2 mb-2">
             <span className="text-[11px] font-semibold text-muted-foreground tracking-wider uppercase">
-              媒体与图像隐私处理
+              {t.nav.mediaCategory}
             </span>
             <Button
               variant="ghost"
               size="icon"
               className="h-5 w-5 text-muted-foreground hover:text-foreground"
               onClick={() => setSidebarOpen(false)}
-              title="折叠导航栏"
+              title="Close Sidebar"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </Button>
@@ -140,7 +138,7 @@ export const Sidebar: React.FC = () => {
         <div className="p-3 border-t border-border/50">
           <div className="px-2 mb-1.5">
             <span className="text-[11px] font-semibold text-muted-foreground tracking-wider uppercase">
-              开发者工具 (CodeMirror 6)
+              {t.nav.devCategory}
             </span>
           </div>
 
@@ -155,7 +153,7 @@ export const Sidebar: React.FC = () => {
             >
               <div className="flex items-center gap-2.5">
                 <FileCode className="w-4 h-4 text-indigo-400" />
-                <span>JSON 配置脚本</span>
+                <span>{language === 'zh' ? 'JSON 配置脚本' : 'JSON Config Script'}</span>
               </div>
               <span className="text-[10px] font-mono text-muted-foreground">CM6</span>
             </button>
@@ -170,7 +168,7 @@ export const Sidebar: React.FC = () => {
             >
               <div className="flex items-center gap-2.5">
                 <KeyRound className="w-4 h-4 text-emerald-400" />
-                <span>离线与隐私架构</span>
+                <span>{t.nav.about}</span>
               </div>
             </button>
           </div>
@@ -180,7 +178,7 @@ export const Sidebar: React.FC = () => {
         <div className="p-3 border-t border-border/50">
           <div className="px-2 mb-2">
             <span className="text-[11px] font-semibold text-muted-foreground tracking-wider uppercase">
-              本地运行状态
+              {t.nav.statusCategory}
             </span>
           </div>
 
@@ -188,16 +186,16 @@ export const Sidebar: React.FC = () => {
             <div className="flex items-center justify-between text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <HardDrive className="w-3.5 h-3.5 text-teal-400" />
-                脱敏处理
+                {t.nav.dataPrivacy}
               </span>
-              <span className="font-mono text-emerald-500 font-medium">100% 内存离线</span>
+              <span className="font-mono text-emerald-500 font-medium">{t.nav.zeroUpload}</span>
             </div>
             <div className="flex items-center justify-between text-muted-foreground">
               <span className="flex items-center gap-1.5">
                 <Cpu className="w-3.5 h-3.5 text-indigo-400" />
-                渲染引擎
+                {t.nav.renderEngine}
               </span>
-              <span className="font-mono text-foreground/80">HTML5 Canvas</span>
+              <span className="font-mono text-foreground/80">{t.nav.canvasEngine}</span>
             </div>
           </div>
         </div>
@@ -210,7 +208,7 @@ export const Sidebar: React.FC = () => {
             <BrandIcon className="h-3.5 w-3.5 rounded" />
             <span className="font-mono font-medium text-foreground/90">tools local</span>
           </div>
-          <span className="font-mono">v1.1.0</span>
+          <span className="font-mono">v1.2.0</span>
         </div>
       </div>
     </aside>

@@ -1,44 +1,110 @@
+import React from 'react';
 import { BrandIcon } from '@/components/brand/BrandIcon';
+import { ShieldCheck, Cpu, Archive, Monitor, HardDriveDownload } from 'lucide-react';
+import { useI18n } from '@/i18n';
+import { Badge } from '@/components/ui/badge';
 
-export function AboutPrivacyView() {
+export const AboutPrivacyView: React.FC = () => {
+  const { t } = useI18n();
+
   return (
-    <div className="flex-1 h-full overflow-y-auto p-6 md:p-10 bg-muted/20">
-      <div className="max-w-2xl mx-auto space-y-8">
-        <div className="flex items-center gap-4">
-          <BrandIcon className="h-14 w-14" />
-          <div>
-            <h1 className="text-2xl font-semibold text-foreground tracking-tight">tools local</h1>
-            <p className="text-sm text-muted-foreground mt-1">图片水印</p>
+    <div className="flex-1 h-full overflow-y-auto p-6 md:p-10 bg-muted/20 select-none">
+      <div className="max-w-3xl mx-auto space-y-8">
+        {/* Hero header */}
+        <div className="flex items-start gap-4 p-6 rounded-2xl bg-card border border-border shadow-xs">
+          <BrandIcon className="h-16 w-16 shrink-0" />
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">tools local</h1>
+              <Badge variant="default" className="text-[11px] bg-emerald-600 hover:bg-emerald-600">
+                {t.about.heroBadge}
+              </Badge>
+            </div>
+            <h2 className="text-sm font-semibold text-foreground">
+              {t.about.heroSubtitle}
+            </h2>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t.about.heroDesc}
+            </p>
           </div>
         </div>
 
+        {/* 3 Privacy & Performance Pillars */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-xl bg-card border border-border p-5 space-y-2.5 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-bold text-foreground">
+              {t.about.pillars.noNetworkTitle}
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t.about.pillars.noNetworkDesc}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-card border border-border p-5 space-y-2.5 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center text-sky-500">
+              <Cpu className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-bold text-foreground">
+              {t.about.pillars.canvasTitle}
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t.about.pillars.canvasDesc}
+            </p>
+          </div>
+
+          <div className="rounded-xl bg-card border border-border p-5 space-y-2.5 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-500">
+              <Archive className="w-5 h-5" />
+            </div>
+            <h3 className="text-sm font-bold text-foreground">
+              {t.about.pillars.batchTitle}
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {t.about.pillars.batchDesc}
+            </p>
+          </div>
+        </div>
+
+        {/* Tech Architecture Stack */}
         <section className="rounded-xl bg-card border border-border p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-foreground">使用方法</h2>
-          <ol className="list-decimal pl-5 space-y-3 text-sm text-muted-foreground leading-relaxed">
-            <li>选择图片，或将图片拖入画布。支持一次添加多张图片。</li>
-            <li>在右侧设置水印文字、位置和样式，也可以直接选择预设。</li>
-            <li>选择导出格式，保存当前图片或将全部图片打包下载。</li>
-          </ol>
+          <div className="flex items-center gap-2">
+            <HardDriveDownload className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">{t.about.techTitle}</h3>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/80">
+              <div className="font-semibold text-foreground">React 19 & TS</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">High Performance Core</div>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/80">
+              <div className="font-semibold text-foreground">Tailwind CSS 4</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">Modern Design System</div>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/80">
+              <div className="font-semibold text-foreground">HTML5 Canvas 2D</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">Pixel-Level Processing</div>
+            </div>
+            <div className="p-3 rounded-lg bg-muted/30 border border-border/80">
+              <div className="font-semibold text-foreground">exifr & JSZip</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">EXIF Parsing & Archive</div>
+            </div>
+          </div>
         </section>
 
-        <section className="rounded-xl bg-card border border-border p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-foreground">文件与设置</h2>
-          <dl className="space-y-4 text-sm leading-relaxed">
-            <div className="space-y-1">
-              <dt className="font-medium text-foreground">图片</dt>
-              <dd className="text-muted-foreground">图片在当前页面中处理，不会上传。刷新或关闭页面后，需要重新添加。</dd>
-            </div>
-            <div className="space-y-1">
-              <dt className="font-medium text-foreground">设置</dt>
-              <dd className="text-muted-foreground">水印参数和界面偏好保存在当前浏览器。可通过 JSON 配置导入或导出水印参数。</dd>
-            </div>
-            <div className="space-y-1">
-              <dt className="font-medium text-foreground">导出</dt>
-              <dd className="text-muted-foreground">支持 PNG、JPEG、WebP，以及多张图片的 ZIP 打包。</dd>
-            </div>
-          </dl>
+        {/* Desktop Application Section */}
+        <section className="rounded-xl bg-card border border-border p-6 space-y-3">
+          <div className="flex items-center gap-2">
+            <Monitor className="w-4 h-4 text-teal-500" />
+            <h3 className="text-sm font-bold text-foreground">{t.about.desktopTitle}</h3>
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {t.about.desktopDesc}
+          </p>
         </section>
       </div>
     </div>
   );
-}
+};
