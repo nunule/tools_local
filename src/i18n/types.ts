@@ -361,6 +361,12 @@ export interface Translations {
   desktopDownload: {
     title: string;
     subtitle: string;
+    githubReleases: string;
+    githubReleasesHint: string;
+    notPublished: string;
+    noInstallers: string;
+    githubUnavailable: string;
+    checkRelease: string;
     macArm: string;
     macIntel: string;
     windows: string;

@@ -360,6 +360,13 @@ export const zh: Translations = {
     },
   },
   desktopDownload: {
+    noInstallers: "当前发布版本没有可用安装包，可前往 GitHub 查看其他版本。",
+    githubReleases: "前往 GitHub 下载",
+    githubReleasesHint: "查看所有版本、安装包和更新说明",
+    notPublished: "首个桌面安装包尚未公开发布。发布后，这里会自动显示可下载的版本。",
+    githubUnavailable: "暂时无法读取 GitHub 安装包列表，可直接前往发布页面查看。",
+    checkRelease: "查看发布页",
+
     title: "下载桌面版",
     subtitle: "安装 tools local，断网也能处理图片。",
     macArm: "macOS · Apple Silicon",

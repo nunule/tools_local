@@ -37,3 +37,27 @@ test('publishes the actual bytes, metadata and hash, without retaining stale ins
     await rm(source, { recursive: true, force: true });
   }
 });
+
+test('release drafts use stable asset names and replace rebuilt bytes even when the size is unchanged', async () => {
+  const source = await mkdtemp(path.join(os.tmpdir(), 'tools-local-github-release-test-'));
+  const destination = path.join(source, 'published');
+  try {
+    const input = path.join(source, 'tools local_1.0.0_aarch64.dmg');
+    await writeFile(input, Buffer.from([1, 2, 3]));
+    const options = { sourceDirs: [source], destination, version: '1.0.0', contentAddressed: false };
+    const first = await prepareDesktopDownloads(options);
+    expectStableName(first);
+    const rebuilt = Buffer.from([3, 2, 1]);
+    await writeFile(input, rebuilt);
+    const second = await prepareDesktopDownloads(options);
+    expectStableName(second);
+    assert.deepEqual(await readFile(path.join(destination, second.releases[0].filename)), rebuilt);
+    assert.equal(second.releases[0].sha256, createHash('sha256').update(rebuilt).digest('hex'));
+  } finally {
+    await rm(source, { recursive: true, force: true });
+  }
+});
+
+function expectStableName(manifest) {
+  assert.equal(manifest.releases[0].filename, 'tools-local-1.0.0-macos-arm64.dmg');
+}

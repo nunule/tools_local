@@ -360,6 +360,13 @@ export const en: Translations = {
     },
   },
   desktopDownload: {
+    noInstallers: "This release has no desktop installers. Check GitHub for other versions.",
+    githubReleases: "Download on GitHub",
+    githubReleasesHint: "All versions, installers and release notes",
+    notPublished: "No desktop installers have been publicly released yet. Published builds will appear here automatically.",
+    githubUnavailable: "GitHub download information is unavailable. You can still open the Releases page.",
+    checkRelease: "See Releases",
+
     title: "Download for desktop",
     subtitle: "Install tools local to work on images offline.",
     macArm: "macOS · Apple Silicon",

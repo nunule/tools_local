@@ -44,7 +44,7 @@ jobs:
       - name: Upload installer
         uses: actions/upload-artifact@v7
         with:
-          name: tools-local-${{ matrix.artifact }}-${{ runner.arch }}
+          name: tools-local-installer-${{ matrix.artifact }}-${{ runner.arch }}
           path: ${{ matrix.files }}
           if-no-files-found: error
           retention-days: 14
@@ -62,7 +62,7 @@ jobs:
           cache: npm
       - uses: actions/download-artifact@v8
         with:
-          pattern: tools-local-*
+          pattern: tools-local-installer-*
           path: desktop-releases
           merge-multiple: true
       - run: npm ci
@@ -74,3 +74,64 @@ jobs:
           path: dist/
           if-no-files-found: error
           retention-days: 14
+
+  draft-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: desktop-release-${{ github.repository }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: tools-local-installer-*
+          path: desktop-releases
+          merge-multiple: true
+      - name: Stage release assets
+        run: node scripts/prepare-desktop-downloads.mjs --github-release
+      - name: Validate release version and installers
+        id: release
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile, appendFile } from 'node:fs/promises';
+          const { version } = JSON.parse(await readFile('src-tauri/tauri.conf.json', 'utf8'));
+          if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Invalid release version');
+          const tag = `desktop-v${version}`;
+          if (process.env.GITHUB_REF_TYPE === 'tag' && process.env.GITHUB_REF_NAME !== tag) {
+            throw new Error(`Tag must match the application version: ${tag}`);
+          }
+          const manifest = JSON.parse(await readFile('public/downloads/manifest.json', 'utf8'));
+          for (const target of ['macos-arm64', 'windows-x64']) {
+            if (!manifest.releases.some((release) => release.target === target)) {
+              throw new Error(`Missing installer: ${target}`);
+            }
+          }
+          await appendFile(process.env.GITHUB_OUTPUT, `version=${version}\ntag=${tag}\n`);
+          NODE
+      - name: Create or update the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          if gh release view "$RELEASE_TAG" --json isDraft > release-status.json; then
+            node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          const release = JSON.parse(await readFile('release-status.json', 'utf8'));
+          if (release.isDraft !== true) throw new Error('Published releases are not overwritten. Bump the version instead.');
+          NODE
+          else
+            gh release create "$RELEASE_TAG" --target "$RELEASE_COMMIT" --draft \
+              --title "tools local v$RELEASE_VERSION" --notes-file docs/desktop-release-notes.md
+          fi
+          gh release upload "$RELEASE_TAG" public/downloads/* --clobber

@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Apple, ArrowDownToLine, Check, ChevronDown, LoaderCircle, Monitor, Terminal, X } from 'lucide-react';
+import { Apple, ArrowDownToLine, Check, ChevronDown, LoaderCircle, Monitor, Terminal, X, Github, ArrowUpRight } from 'lucide-react';
 import { BrandIcon } from '@/components/brand/BrandIcon';
 import { useI18n } from '@/i18n';
+import { GITHUB_RELEASES_URL } from '@/constants/projectLinks';
 import { DESKTOP_TARGETS, desktopDownloadUrl, detectDesktopOS, loadDesktopManifest, type DesktopManifest, type DesktopTarget } from '@/platform/downloads';
 
 interface DesktopDownloadModalProps { isOpen: boolean; onClose: () => void }
@@ -52,6 +53,13 @@ export const DesktopDownloadModal: React.FC<DesktopDownloadModalProps> = ({ isOp
         <p id="desktop-download-description" className="mt-2 text-xs leading-6 text-muted-foreground">{t.desktopDownload.subtitle}</p>
       </div>
       <div className="space-y-2 px-7 pb-5">
+        <a href={GITHUB_RELEASES_URL} target="_blank" rel="noopener noreferrer"
+          className="mb-4 flex items-center gap-3 rounded-xl border border-teal-600/25 bg-teal-500/5 p-3.5 text-teal-700 transition-colors hover:bg-teal-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:text-teal-300">
+          <Github className="h-5 w-5 shrink-0" />
+          <div className="flex-1"><span className="block text-xs font-semibold">{t.desktopDownload.githubReleases}</span><span className="mt-1 block text-[10px] text-muted-foreground">{t.desktopDownload.githubReleasesHint}</span></div>
+          <ArrowUpRight className="h-4 w-4" />
+        </a>
+        {manifest?.releases.length === 0 && <p role="status" className="pb-2 text-[11px] leading-5 text-muted-foreground">{manifest.githubStatus === 'unavailable' ? t.desktopDownload.githubUnavailable : manifest.githubStatus === 'published' ? t.desktopDownload.noInstallers : t.desktopDownload.notPublished}</p>}
         {!manifest && !error && <div role="status" className="flex items-center gap-2 py-10 text-sm text-muted-foreground"><LoaderCircle className="h-4 w-4 animate-spin" />{t.desktopDownload.loading}</div>}
         {error && <div role="alert" className="rounded-lg border border-border p-4 text-xs"><p>{t.desktopDownload.loadError}</p><button onClick={() => setAttempt((value) => value + 1)} className="mt-3 rounded-md bg-muted px-3 py-1.5 font-medium">{t.desktopDownload.retry}</button></div>}
         {manifest && targets.map((target) => {
@@ -63,7 +71,7 @@ export const DesktopDownloadModal: React.FC<DesktopDownloadModalProps> = ({ isOp
             <div key={target} className={`flex items-center gap-3 rounded-xl border p-3.5 ${release ? 'border-teal-600/25 bg-teal-500/[0.04]' : 'border-border/80'}`}>
               <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${release ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300' : 'bg-muted/70 text-muted-foreground'}`}><Icon className="h-[18px] w-[18px]" /></div>
               <div className="min-w-0 flex-1"><h3 className="text-xs font-semibold">{labels[target]}</h3><p className="mt-1 text-[10px] text-muted-foreground">{mac ? t.desktopDownload.macRequirement : windows ? t.desktopDownload.windowsRequirement : t.desktopDownload.linuxRequirement}{release && ` · ${(release.size / 1024 / 1024).toFixed(1)} MB`}</p></div>
-              {release ? <a href={desktopDownloadUrl(release)} download={release.filename} onClick={() => setDownloaded(target)} aria-label={`${t.desktopDownload.download} · ${labels[target]}`} className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-teal-700 px-2.5 text-[11px] font-semibold text-white transition-colors hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"><ArrowDownToLine className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t.common.download}</span><span className="sm:hidden">{release.filename.endsWith('.dmg') ? 'DMG' : release.filename.endsWith('.exe') ? 'EXE' : 'AppImage'}</span></a> : <span className="shrink-0 rounded-md bg-muted/60 px-2 py-1 text-[10px] text-muted-foreground">{t.desktopDownload.unavailable}</span>}
+              {release ? <a href={desktopDownloadUrl(release)} download={release.filename} target={release.url ? '_blank' : undefined} rel="noopener noreferrer" onClick={() => setDownloaded(target)} aria-label={`${t.desktopDownload.download} · ${labels[target]}`} className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-teal-700 px-2.5 text-[11px] font-semibold text-white transition-colors hover:bg-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"><ArrowDownToLine className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t.common.download}</span><span className="sm:hidden">{release.filename.endsWith('.dmg') ? 'DMG' : release.filename.endsWith('.exe') ? 'EXE' : 'AppImage'}</span></a> : <span className="shrink-0 rounded-md bg-muted/60 px-2 py-1 text-[10px] text-muted-foreground">{manifest.githubStatus === 'unavailable' ? t.desktopDownload.checkRelease : t.desktopDownload.unavailable}</span>}
             </div>
           );
         })}

@@ -70,10 +70,9 @@ describe('Toolbit-Style Sidebar & Desktop Download', () => {
   });
 
   it('renders available native installers and clearly marks unpublished platforms', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ schemaVersion: 1, version: '1.0.0', releases: [] }),
-    }));
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string) => url.includes('api.github.com')
+      ? { ok: false, status: 404 }
+      : { ok: true, status: 200, json: async () => ({ schemaVersion: 1, version: '1.0.0', releases: [] }) }));
     render(<DesktopDownloadModal isOpen={true} onClose={vi.fn()} />);
     expect(screen.getByRole('heading', { name: '下载桌面版' })).toBeInTheDocument();
     expect(await screen.findByText('macOS · Apple Silicon')).toBeInTheDocument();
@@ -81,7 +80,8 @@ describe('Toolbit-Style Sidebar & Desktop Download', () => {
     expect(screen.getByText('Windows')).toBeInTheDocument();
     expect(screen.getByText('Linux')).toBeInTheDocument();
     expect(screen.getAllByText('暂未发布')).toHaveLength(4);
-    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /前往 GitHub 下载/ })).toHaveAttribute('href', 'https://github.com/nunule/tools_local/releases');
+    expect(screen.queryByRole('link', { name: /下载安装包/ })).not.toBeInTheDocument();
   });
 
   it('supports English localization seamlessly', () => {

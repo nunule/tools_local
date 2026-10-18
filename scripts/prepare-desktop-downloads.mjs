@@ -35,7 +35,7 @@ export function identifyInstaller(filename, version) {
 }
 
 // Only publish files from an actual native build of the current application version.
-export async function prepareDesktopDownloads({ sourceDirs, destination, version }) {
+export async function prepareDesktopDownloads({ sourceDirs, destination, version, contentAddressed = true }) {
   const sources = (await Promise.all(sourceDirs.map(async (directory) => (await filesIn(directory)).sort()))).flat();
   const selected = new Map();
   for (const file of sources) {
@@ -48,11 +48,11 @@ export async function prepareDesktopDownloads({ sourceDirs, destination, version
     const bytes = await readFile(file);
     if (bytes.length === 0) throw new Error(`Installer is empty: ${file}`);
     const sha256 = createHash('sha256').update(bytes).digest('hex');
-    // Content-addressed filenames prevent a browser/CDN serving a stale rebuild.
-    const filename = `tools-local-${version}-${target}-${sha256.slice(0, 12)}.${extension}`;
+    // Hash website files for caching; keep draft Release asset names stable for re-runs.
+    const filename = `tools-local-${version}-${target}${contentAddressed ? `-${sha256.slice(0, 12)}` : ''}.${extension}`;
     const output = path.join(destination, filename);
     const existing = await stat(output).catch(() => null);
-    if (!existing || existing.size !== bytes.length) await cp(file, output);
+    if (!contentAddressed || !existing || existing.size !== bytes.length) await cp(file, output);
     releases.push({ target, filename, version, size: bytes.length, sha256 });
   }
   releases.sort((a, b) => a.target.localeCompare(b.target));
@@ -76,6 +76,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     sourceDirs: [path.join(root, 'src-tauri/target/release/bundle'), path.join(root, 'desktop-releases')],
     destination: path.join(root, 'public/downloads'),
     version: config.version,
+    contentAddressed: !process.argv.includes('--github-release'),
   });
   console.log(`Desktop downloads: ${manifest.releases.length} installer(s) available for v${manifest.version}`);
 }
