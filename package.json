@@ -10,12 +10,16 @@
     "tauri": "tauri",
     "desktop:dev": "tauri dev",
     "desktop:build": "tauri build",
-    "desktop:build:mac": "tauri build --bundles app,dmg",
+    "desktop:build:mac": "CI=true tauri build --bundles app,dmg",
     "desktop:build:win": "tauri build --bundles nsis",
     "desktop:icons": "tauri icon public/icon.svg --output src-tauri/icons",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/desktop-downloads.test.mjs",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "predev": "npm run downloads:prepare",
+    "prebuild": "npm run downloads:prepare",
+    "downloads:prepare": "node scripts/prepare-desktop-downloads.mjs",
+    "build:desktop": "tsc -b && vite build --mode desktop && node scripts/copy-desktop-assets.mjs"
   },
   "dependencies": {
     "@codemirror/lang-json": "^6.0.1",

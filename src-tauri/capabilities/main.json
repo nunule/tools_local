@@ -1,11 +1,24 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "main",
-  "description": "Save exported files to a location explicitly selected by the user.",
-  "windows": ["main"],
+  "description": "Save exported files to a user-selected location and open GitHub links in the default browser.",
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "dialog:allow-save",
-    "fs:allow-write-file"
+    "fs:allow-write-file",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://github.com/"
+        },
+        {
+          "url": "https://github.com/**"
+        }
+      ]
+    }
   ]
 }

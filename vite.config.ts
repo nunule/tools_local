@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 import path from 'path';
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   clearScreen: false,
   plugins: [
     react(),
@@ -22,6 +22,8 @@ export default defineConfig({
     watch: { ignored: ['**/src-tauri/**'] }
   },
   build: {
+    outDir: mode === 'desktop' ? 'dist-desktop' : 'dist',
+    copyPublicDir: mode !== 'desktop',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -39,4 +41,4 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     include: ['src/**/*.test.{ts,tsx}']
   }
-});
+}));

@@ -24,6 +24,8 @@ export const ShortcutsModal: React.FC<ShortcutsModalProps> = ({ isOpen, onClose 
   if (!isOpen) return null;
 
   const shortcuts = [
+    { key: 'Cmd/Ctrl + K', desc: t.shortcuts.searchTools },
+    { key: 'Cmd/Ctrl + B', desc: t.shortcuts.toggleSidebar },
     { key: 'Cmd/Ctrl + V', desc: t.shortcuts.cmdV },
     { key: 'Cmd/Ctrl + S', desc: t.shortcuts.cmdS },
     { key: 'Wheel', desc: t.shortcuts.wheel },

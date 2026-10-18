@@ -18,15 +18,15 @@ import { isDesktopApp } from '@/platform/files';
 
 export const App: React.FC = () => {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const { 
-    activeTab, 
-    desktopFrame, 
-    theme, 
-    images, 
-    activeImageId, 
+  const {
+    activeTab,
+    desktopFrame,
+    theme,
+    images,
+    activeImageId,
     config,
     desktopModalOpen,
-    setDesktopModalOpen 
+    setDesktopModalOpen
   } = useWatermarkStore();
   const showDesktopFrame = desktopFrame && !isDesktopApp();
 
@@ -67,7 +67,7 @@ export const App: React.FC = () => {
       {/* PC Desktop Window Shell (if enabled) */}
       <div className={`w-full h-full flex flex-col overflow-hidden bg-background ${
         showDesktopFrame
-          ? 'rounded-xl border border-slate-700/80 shadow-2xl ring-1 ring-white/10' 
+          ? 'rounded-xl border border-slate-700/80 shadow-2xl ring-1 ring-white/10'
           : ''
       }`}>
         {/* Desktop Titlebar (Traffic lights macOS style) */}
@@ -85,36 +85,36 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Global App Header */}
-        <Header onOpenShortcuts={() => setShortcutsOpen(true)} />
-
         {/* Main Body Workspace */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex min-h-0 overflow-hidden">
           {/* Left Navigation Sidebar */}
           <Sidebar />
 
-          {/* Center Main Stage according to active tab */}
-          <main className="flex-1 flex overflow-hidden">
-            {activeTab === 'watermark' && (
-              <div className="flex-1 flex overflow-hidden">
-                {/* Center Canvas + Bottom Filmstrip */}
-                <div className="flex-1 flex flex-col overflow-hidden relative">
-                  <CanvasViewport />
-                  <BatchFilmstrip />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <Header onOpenShortcuts={() => setShortcutsOpen(true)} />
+            {/* Center Main Stage according to active tab */}
+            <main className="flex-1 min-h-0 flex overflow-hidden">
+              {activeTab === 'watermark' && (
+                <div className="flex-1 flex overflow-hidden">
+                  {/* Center Canvas + Bottom Filmstrip */}
+                  <div className="flex-1 flex flex-col overflow-hidden relative">
+                    <CanvasViewport />
+                    <BatchFilmstrip />
+                  </div>
+
+                  {/* Right Parameter Controls */}
+                  <WatermarkControls />
                 </div>
+              )}
 
-                {/* Right Parameter Controls */}
-                <WatermarkControls />
-              </div>
-            )}
-
-            {activeTab === 'redact' && <RedactStudioView />}
-            {activeTab === 'exif' && <ExifCleanerView />}
-            {activeTab === 'screenshot' && <ScreenshotStudioView />}
-            {activeTab === 'id-copy' && <IDCopyStudioView />}
-            {activeTab === 'json-config' && <CodeMirrorConfigView />}
-            {activeTab === 'about' && <AboutPrivacyView />}
-          </main>
+              {activeTab === 'redact' && <RedactStudioView />}
+              {activeTab === 'exif' && <ExifCleanerView />}
+              {activeTab === 'screenshot' && <ScreenshotStudioView />}
+              {activeTab === 'id-copy' && <IDCopyStudioView />}
+              {activeTab === 'json-config' && <CodeMirrorConfigView />}
+              {activeTab === 'about' && <AboutPrivacyView />}
+            </main>
+          </div>
         </div>
       </div>
 
@@ -122,7 +122,7 @@ export const App: React.FC = () => {
       <ShortcutsModal isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
       {/* Desktop App Download & Install Dialog */}
-      <DesktopDownloadModal isOpen={desktopModalOpen} onClose={() => setDesktopModalOpen(false)} />
+      {!isDesktopApp() && <DesktopDownloadModal isOpen={desktopModalOpen} onClose={() => setDesktopModalOpen(false)} />}
     </div>
   );
 };

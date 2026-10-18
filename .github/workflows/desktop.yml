@@ -48,3 +48,29 @@ jobs:
           path: ${{ matrix.files }}
           if-no-files-found: error
           retention-days: 14
+
+  web-downloads:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: tools-local-*
+          path: desktop-releases
+          merge-multiple: true
+      - run: npm ci
+      - name: Build website with native downloads
+        run: npm run build
+      - uses: actions/upload-artifact@v7
+        with:
+          name: tools-local-web-with-downloads
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14

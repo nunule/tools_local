@@ -41,6 +41,9 @@ interface WatermarkStoreState {
   // Workspace
   activeTab: ActiveToolTab;
   setActiveTab: (tab: ActiveToolTab) => void;
+  favoriteTools: ActiveToolTab[];
+  toggleFavoriteTool: (tab: ActiveToolTab) => void;
+  recentTools: ActiveToolTab[];
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   theme: 'dark' | 'light';
@@ -213,7 +216,19 @@ export const useWatermarkStore = create<WatermarkStoreState>()(
       setShowGrid: (showGrid) => set({ showGrid }),
 
       activeTab: 'watermark',
-      setActiveTab: (activeTab) => set({ activeTab }),
+      setActiveTab: (activeTab) => set((state) => ({
+        activeTab,
+        recentTools: activeTab === 'about'
+          ? state.recentTools
+          : [activeTab, ...state.recentTools.filter((tab) => tab !== activeTab)].slice(0, 6),
+      })),
+      favoriteTools: ['watermark', 'redact'],
+      toggleFavoriteTool: (tab) => set((state) => ({
+        favoriteTools: state.favoriteTools.includes(tab)
+          ? state.favoriteTools.filter((item) => item !== tab)
+          : [...state.favoriteTools, tab],
+      })),
+      recentTools: ['watermark'],
       sidebarOpen: true,
       setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
       theme: 'dark',
@@ -243,7 +258,9 @@ export const useWatermarkStore = create<WatermarkStoreState>()(
         config: state.config,
         theme: state.theme,
         desktopFrame: state.desktopFrame,
-        sidebarOpen: state.sidebarOpen
+        sidebarOpen: state.sidebarOpen,
+        favoriteTools: state.favoriteTools,
+        recentTools: state.recentTools,
       })
     }
   )

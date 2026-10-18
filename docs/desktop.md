@@ -20,7 +20,7 @@ Tauri starts a separate Vite server at `http://localhost:1420` and opens the app
 
 ## Build an installer
 
-On a Mac:
+On a Mac (this script skips Finder-only DMG decoration, so no Automation permission is required):
 
 ```sh
 npm run desktop:build:mac -- --ci
@@ -69,7 +69,7 @@ macOS uses `src-tauri/icons/icon.icns`; Windows uses `src-tauri/icons/icon.ico`.
 
 The **Desktop installers** workflow builds macOS and Windows packages separately. Run it from GitHub's **Actions → Desktop installers → Run workflow**. It also runs when pushing a tag matching `desktop-v*`.
 
-The resulting installers are attached to the workflow run as downloadable artifacts for 14 days. The workflow does not create a release or publish the application. No signing secrets are required for test builds.
+The resulting installers are attached to the workflow run as downloadable artifacts for 14 days. The workflow also prepares a website bundle containing the installers (see below). It does not create a release or publish the application. No signing secrets are required for test builds.
 
 ## Signing for public distribution
 
@@ -84,3 +84,34 @@ cargo check --locked --manifest-path src-tauri/Cargo.toml
 ```
 
 The export tests cover browser downloads, native binary writes, cancellation, filename suggestions, JSON/ZIP filters and write failures. In the built application, also check image selection/drop, a processed image export, JSON export, a cancelled Save As dialog, and application relaunch without the development server.
+
+## Website download button
+
+The sidebar's **Download Desktop** button opens an installer picker with separate Apple Silicon, Intel Mac, Windows and Linux entries. It reads `downloads/manifest.json` and offers a link only when an actual installer for that target has been staged. Operating-system detection changes the display order; it does not guess a Mac's chip from its browser user agent. Bookmarks and recent tools are stored in the browser's local settings.
+
+`npm run dev` and `npm run build` automatically run `npm run downloads:prepare`. This collects installers matching the version in `src-tauri/tauri.conf.json` from:
+
+- `src-tauri/target/release/bundle/` — local native build output.
+- `desktop-releases/` — extracted installers downloaded from CI or built on another machine.
+
+The generated `public/downloads/` contains real installer files plus a manifest with the platform, version, byte size and SHA-256. Filenames include a content hash so a rebuilt installer is not confused with a cached file. Source installers, generated downloads and native build directories are ignored by Git.
+
+For a local macOS release and website build:
+
+```sh
+npm run desktop:build:mac -- --ci
+npm run build
+npm run preview
+```
+
+Deploy the **entire `dist/` directory**, including `dist/downloads/`, to the static host. There is no required R2 account or separate download server. If the host has a SPA catch-all, keep existing static files higher priority than that fallback, and serve `downloads/manifest.json` without long-lived caching. A fresh checkout with no native artifacts intentionally shows **Not released** instead of linking to missing files.
+
+The **Desktop installers** workflow also gathers its macOS and Windows artifacts into `desktop-releases/` and produces **tools-local-web-with-downloads**: a website bundle with the installer links ready to deploy. It does not publish it automatically.
+
+The native app uses a separate `dist-desktop/` frontend output. Its asset-copy step excludes `public/downloads/`, so installers are never recursively embedded inside the desktop app. The native window hides website download entries.
+
+The current local macOS test build is Apple Silicon only. Intel, Windows or Linux entries become available only after an installer for that exact architecture and current version is supplied. Recognized Tauri output names end in `_VERSION_aarch64.dmg`, `_VERSION_x64.dmg` (or `_x86_64.dmg`), `_VERSION_x64-setup.exe`, or `_VERSION_amd64.AppImage` (or `_x86_64.AppImage`). Linux native builds are not included in the current CI matrix.
+
+## GitHub link on the About page
+
+Set `VITE_GITHUB_URL` to the project's public GitHub repository URL before building (see `.env.example`). Until a repository address is provided, the compact GitHub link opens the GitHub homepage. The desktop app uses the opener plugin to open this link in the default browser; its URL permission is limited to `https://github.com/` and its paths.

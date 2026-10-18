@@ -17,3 +17,7 @@ src-tauri/target
 src-tauri/gen/schemas
 src-tauri/icons/android
 src-tauri/icons/ios
+
+dist-desktop
+public/downloads
+desktop-releases

@@ -1,580 +1,192 @@
-import React, { useState, useMemo } from 'react';
-import { 
-  Home, 
-  LayoutGrid, 
-  Bookmark, 
-  History, 
-  Download, 
-  Sun, 
-  Moon, 
-  Settings, 
-  Search, 
-  PanelLeftClose, 
-  PanelLeft, 
-  ChevronDown, 
-  ChevronRight, 
-  ShieldCheck, 
-  Stamp, 
-  Paintbrush, 
-  Camera, 
-  Crop, 
-  CreditCard, 
-  FileCode, 
-  Info, 
-  QrCode, 
-  ScanFace, 
-  FileText, 
-  Binary, 
-  FileSpreadsheet,
-  X,
-  Sparkles,
-  Laptop
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  ArrowDownToLine, ArrowUpRight, Bookmark, Camera, ChevronDown, ChevronRight,
+  CreditCard, Crop, FileCode2, History, Info, LayoutGrid, Moon, PanelLeftClose,
+  PanelLeftOpen, Search, ShieldCheck, Stamp, Sun, Paintbrush, X,
+  QrCode, ScanFace, FileText, Binary, FileSpreadsheet, type LucideIcon,
 } from 'lucide-react';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ActiveToolTab } from '@/types/privacyTools';
 import { BrandIcon } from '@/components/brand/BrandIcon';
 import { useI18n } from '@/i18n';
+import { isDesktopApp } from '@/platform/files';
+import type { ActiveToolTab } from '@/types/privacyTools';
+
+type View = 'all' | 'favorites' | 'history';
+type Tool = { id: ActiveToolTab; name: string; keywords: string; icon: LucideIcon; count?: number };
+const railButton = 'relative flex h-9 w-9 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500';
 
 export const Sidebar: React.FC = () => {
-  const { 
-    sidebarOpen, 
-    setSidebarOpen, 
-    activeTab, 
-    setActiveTab, 
-    images,
-    theme,
-    setTheme,
-    setDesktopModalOpen 
+  const {
+    sidebarOpen, setSidebarOpen, activeTab, setActiveTab, images, theme, setTheme,
+    setDesktopModalOpen, favoriteTools, toggleFavoriteTool, recentTools,
   } = useWatermarkStore();
+  const { t } = useI18n();
+  const [view, setView] = useState<View>('all');
+  const [query, setQuery] = useState('');
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ upcoming: true });
+  const searchRef = useRef<HTMLInputElement>(null);
+  const focusSearch = useRef(false);
+  const desktop = isDesktopApp();
 
-  const { t, language } = useI18n();
+  const tools: Tool[] = [
+    { id: 'watermark', name: t.nav.watermark, keywords: 'watermark stamp 水印 图片', icon: Stamp, count: images.length },
+    { id: 'redact', name: t.nav.redact, keywords: 'redact blur mosaic 隐私 打码 马赛克 模糊', icon: Paintbrush },
+    { id: 'exif', name: t.nav.exif, keywords: 'exif gps camera metadata 照片 清理 定位 元数据', icon: Camera },
+    { id: 'screenshot', name: t.nav.screenshot, keywords: 'screenshot crop 截图 裁切', icon: Crop },
+    { id: 'id-copy', name: t.nav.idCopy, keywords: 'id copy card 证件 副本 身份证', icon: CreditCard },
+    { id: 'json-config', name: t.configEditor.title, keywords: 'json config 配置', icon: FileCode2 },
+  ];
+  const upcoming = [
+    { name: t.sidebar.upcomingTools.barcodeMask, icon: QrCode },
+    { name: t.sidebar.upcomingTools.aiSensitive, icon: ScanFace },
+    { name: t.sidebar.upcomingTools.pdfRedact, icon: FileText },
+    { name: t.sidebar.upcomingTools.batchDesensitize, icon: Binary },
+    { name: t.sidebar.upcomingTools.fileAnonymize, icon: FileSpreadsheet },
+  ];
+  const normalizedQuery = query.trim().toLocaleLowerCase();
+  const matches = (tool: Tool) => `${tool.name} ${tool.keywords}`.toLocaleLowerCase().includes(normalizedQuery);
+  const visibleTools = (view === 'history'
+    ? recentTools.flatMap((id) => tools.filter((tool) => tool.id === id))
+    : tools.filter((tool) => view !== 'favorites' || favoriteTools.includes(tool.id))
+  ).filter(matches);
+  const title = view === 'all' ? t.sidebar.allTools : view === 'favorites' ? t.sidebar.favorites : t.sidebar.history;
 
-  // Search filter query in the secondary drawer
-  const [filterQuery, setFilterQuery] = useState('');
+  useEffect(() => {
+    if (sidebarOpen && focusSearch.current) {
+      searchRef.current?.focus();
+      focusSearch.current = false;
+    }
+  }, [sidebarOpen]);
 
-  // Dock active filter mode: 'all' | 'favorites' | 'history'
-  const [dockFilter, setDockFilter] = useState<'all' | 'favorites' | 'history'>('all');
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const command = event.metaKey || event.ctrlKey;
+      const editing = event.target instanceof HTMLElement &&
+        (event.target.matches('input, textarea, select') || event.target.isContentEditable || Boolean(event.target.closest('.cm-editor')));
+      if (useWatermarkStore.getState().desktopModalOpen || document.querySelector('dialog[open]')) return;
+      if (command && event.key.toLowerCase() === 'b') {
+        event.preventDefault();
+        setSidebarOpen(!useWatermarkStore.getState().sidebarOpen);
+      }
+      if ((command && event.key.toLowerCase() === 'k') || (!editing && event.key === '/')) {
+        event.preventDefault();
+        if (useWatermarkStore.getState().sidebarOpen) searchRef.current?.focus();
+        else {
+          focusSearch.current = true;
+          setSidebarOpen(true);
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [setSidebarOpen]);
 
-  // Favorites tracking (stored locally in component state)
-  const [favorites, setFavorites] = useState<string[]>(['watermark', 'redact', 'exif']);
-
-  // Collapsible categories state
-  const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({
-    imagePrivacy: false,
-    configDev: false,
-    upcoming: false,
-  });
-
-  const toggleCategory = (catKey: string) => {
-    setCollapsedCategories((prev) => ({
-      ...prev,
-      [catKey]: !prev[catKey],
-    }));
+  const openView = (next: View) => {
+    setView(next);
+    setQuery('');
+    setSidebarOpen(true);
   };
-
-  const toggleFavorite = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    setFavorites((prev) => 
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+  const navigate = (id: ActiveToolTab) => {
+    setActiveTab(id);
+    if (window.matchMedia?.('(max-width: 767px)').matches) setSidebarOpen(false);
+  };
+  const renderTool = (tool: Tool) => {
+    const Icon = tool.icon;
+    const selected = activeTab === tool.id;
+    const saved = favoriteTools.includes(tool.id);
+    return (
+      <div key={tool.id} className={`group relative flex items-center rounded-lg ${selected ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300' : 'text-foreground/75 hover:bg-muted/70'}`}>
+        {selected && <span className="absolute left-0 h-4 w-0.5 rounded-full bg-teal-500" />}
+        <button onClick={() => navigate(tool.id)} aria-current={selected ? 'page' : undefined}
+          className="flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-lg pl-3 pr-1 text-left text-[13px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
+          <Icon className={`h-4 w-4 shrink-0 ${selected ? '' : 'text-muted-foreground'}`} />
+          <span className={`truncate ${selected ? 'font-semibold' : 'font-medium'}`}>{tool.name}</span>
+          {Boolean(tool.count) && <span className="ml-auto rounded bg-teal-500/10 px-1.5 font-mono text-[10px]">{tool.count}</span>}
+        </button>
+        <button onClick={() => toggleFavoriteTool(tool.id)} aria-pressed={saved}
+          aria-label={`${saved ? t.sidebar.unsave : t.sidebar.save} ${tool.name}`}
+          title={saved ? t.sidebar.unsave : t.sidebar.save}
+          className={`mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-opacity hover:bg-muted focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${saved ? 'text-teal-600 dark:text-teal-400' : 'text-muted-foreground opacity-0 group-hover:opacity-100'}`}>
+          <Bookmark className="h-3.5 w-3.5" fill={saved ? 'currentColor' : 'none'} strokeWidth={saved ? 1.5 : 2} />
+        </button>
+      </div>
     );
   };
-
-  // Primary available tools in Category 1
-  const imagePrivacyTools = useMemo(() => [
-    {
-      id: 'watermark' as ActiveToolTab,
-      name: t.nav.watermark,
-      desc: language === 'zh' ? '全屏错位防伪平铺 · 定点水印' : 'Tiled & single anchor watermark',
-      icon: <Stamp className="w-4 h-4 text-teal-500" />,
-      badge: images.length > 0 ? `${images.length}` : undefined,
-    },
-    {
-      id: 'redact' as ActiveToolTab,
-      name: t.nav.redact,
-      desc: language === 'zh' ? '框选涂抹 · 纯色/马赛克/模糊' : 'Rect & brush mosaic / blur',
-      icon: <Paintbrush className="w-4 h-4 text-sky-500" />,
-    },
-    {
-      id: 'exif' as ActiveToolTab,
-      name: t.nav.exif,
-      desc: language === 'zh' ? '抹除定位GPS/拍摄时间/设备' : 'Wipe GPS & hardware metadata',
-      icon: <Camera className="w-4 h-4 text-amber-500" />,
-    },
-    {
-      id: 'screenshot' as ActiveToolTab,
-      name: t.nav.screenshot,
-      desc: language === 'zh' ? '裁状态栏/Home条 · 遮头像账号' : 'Trim status bar & mask avatars',
-      icon: <Crop className="w-4 h-4 text-indigo-500" />,
-    },
-    {
-      id: 'id-copy' as ActiveToolTab,
-      name: t.nav.idCopy,
-      desc: language === 'zh' ? '身份证/驾照脱敏 · 防盗用途水印' : 'ID card copy & purpose stamp',
-      icon: <CreditCard className="w-4 h-4 text-rose-500" />,
-    },
-  ], [t, language, images.length]);
-
-  // Dev tools in Category 2
-  const configDevTools = useMemo(() => [
-    {
-      id: 'json-config' as ActiveToolTab,
-      name: language === 'zh' ? 'JSON 配置脚本' : 'JSON Config Script',
-      desc: 'CodeMirror 6 JSON Editor',
-      icon: <FileCode className="w-4 h-4 text-indigo-400" />,
-      badge: 'CM6',
-    },
-    {
-      id: 'about' as ActiveToolTab,
-      name: t.nav.about,
-      desc: language === 'zh' ? '100% 本地离线安全架构' : '100% offline security info',
-      icon: <Info className="w-4 h-4 text-emerald-400" />,
-    },
-  ], [t, language]);
-
-  // Upcoming Batch 2 preview tools
-  const upcomingTools = useMemo(() => [
-    {
-      id: 'upcoming-barcode',
-      name: t.sidebar.upcomingTools.barcodeMask,
-      desc: t.sidebar.upcomingTools.barcodeMaskDesc,
-      icon: <QrCode className="w-4 h-4 text-cyan-400" />,
-    },
-    {
-      id: 'upcoming-ai',
-      name: t.sidebar.upcomingTools.aiSensitive,
-      desc: t.sidebar.upcomingTools.aiSensitiveDesc,
-      icon: <ScanFace className="w-4 h-4 text-purple-400" />,
-    },
-    {
-      id: 'upcoming-pdf',
-      name: t.sidebar.upcomingTools.pdfRedact,
-      desc: t.sidebar.upcomingTools.pdfRedactDesc,
-      icon: <FileText className="w-4 h-4 text-red-400" />,
-    },
-    {
-      id: 'upcoming-text',
-      name: t.sidebar.upcomingTools.batchDesensitize,
-      desc: t.sidebar.upcomingTools.batchDesensitizeDesc,
-      icon: <Binary className="w-4 h-4 text-emerald-400" />,
-    },
-    {
-      id: 'upcoming-file',
-      name: t.sidebar.upcomingTools.fileAnonymize,
-      desc: t.sidebar.upcomingTools.fileAnonymizeDesc,
-      icon: <FileSpreadsheet className="w-4 h-4 text-amber-400" />,
-    },
-  ], [t]);
-
-  // Filter tools based on query & dock filter
-  const filterList = <T extends { id: string; name: string; desc: string }>(list: T[]): T[] => {
-    return list.filter((item) => {
-      if (dockFilter === 'favorites' && !favorites.includes(item.id)) {
-        return false;
-      }
-      if (!filterQuery.trim()) return true;
-      const q = filterQuery.toLowerCase();
-      return item.name.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q);
-    });
-  };
-
-  const filteredImagePrivacy = filterList(imagePrivacyTools);
-  const filteredConfigDev = filterList(configDevTools);
-  const filteredUpcoming = filterList(upcomingTools);
-
-  const hasAnyResults = filteredImagePrivacy.length > 0 || filteredConfigDev.length > 0 || filteredUpcoming.length > 0;
+  const renderCategory = (id: string, label: string, list: Tool[]) => list.length > 0 && (
+    <section key={id} className="mb-5">
+      <button onClick={() => setCollapsed((state) => ({ ...state, [id]: !state[id] }))}
+        aria-expanded={normalizedQuery ? true : !collapsed[id]} aria-controls={`nav-${id}`}
+        className="mb-1 flex h-8 w-full items-center gap-1.5 px-2 text-left text-[11px] font-medium text-muted-foreground hover:text-foreground">
+        {collapsed[id] && !normalizedQuery ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+        <span>{label}</span><span className="ml-auto font-mono text-[10px] opacity-70">{list.length}</span>
+      </button>
+      {(!collapsed[id] || normalizedQuery) && <div id={`nav-${id}`} className="space-y-0.5">{list.map(renderTool)}</div>}
+    </section>
+  );
 
   return (
-    <aside className="flex h-full z-20 shrink-0 select-none">
-      {/* ========================================================= */}
-      {/* TIER 1: Narrow Activity Dock (Toolbit-Style Icon Rail)     */}
-      {/* ========================================================= */}
-      <div className="w-12 sm:w-13 border-r border-border bg-card/90 flex flex-col items-center justify-between py-3 shrink-0 z-20">
-        {/* Top dock section */}
-        <div className="flex flex-col items-center gap-2 w-full">
-          {/* Brand Logo Button */}
-          <button
-            onClick={() => {
-              setActiveTab('watermark');
-              setSidebarOpen(true);
-            }}
-            className="w-9 h-9 rounded-xl bg-primary/10 hover:bg-primary/20 flex items-center justify-center p-1.5 transition-all text-primary hover:scale-105 active:scale-95 shadow-xs"
-            title="tools local"
-          >
-            <BrandIcon className="w-6 h-6 rounded-md" />
-          </button>
-
-          <div className="w-6 h-[1px] bg-border/60 my-1" />
-
-          {/* Home */}
-          <button
-            onClick={() => {
-              setActiveTab('watermark');
-              setDockFilter('all');
-              setSidebarOpen(true);
-            }}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-              activeTab === 'watermark' && dockFilter === 'all'
-                ? 'bg-primary/15 text-primary shadow-xs'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
-            }`}
-            title={t.sidebar.home}
-          >
-            <Home className="w-4 h-4" />
-          </button>
-
-          {/* All Tools (Grid) */}
-          <button
-            onClick={() => {
-              setDockFilter('all');
-              setFilterQuery('');
-              setSidebarOpen(true);
-            }}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-              dockFilter === 'all' && sidebarOpen
-                ? 'bg-primary/15 text-primary shadow-xs'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
-            }`}
-            title={t.sidebar.allTools}
-          >
-            <LayoutGrid className="w-4 h-4" />
-          </button>
-
-          {/* Favorites (Bookmark) */}
-          <button
-            onClick={() => {
-              setDockFilter((prev) => (prev === 'favorites' ? 'all' : 'favorites'));
-              setSidebarOpen(true);
-            }}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-              dockFilter === 'favorites'
-                ? 'bg-primary/20 text-primary shadow-xs'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
-            }`}
-            title={t.sidebar.favorites}
-          >
-            <Bookmark className="w-4 h-4" />
-          </button>
-
-          {/* History */}
-          <button
-            onClick={() => {
-              setDockFilter((prev) => (prev === 'history' ? 'all' : 'history'));
-              setSidebarOpen(true);
-            }}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-              dockFilter === 'history'
-                ? 'bg-primary/20 text-primary shadow-xs'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
-            }`}
-            title={t.sidebar.history}
-          >
-            <History className="w-4 h-4" />
-          </button>
+    <aside aria-label={t.sidebar.tools} className="relative z-30 flex h-full shrink-0 select-none">
+      <nav aria-label={t.sidebar.workspace} className="flex w-[52px] flex-col items-center border-r border-border bg-muted/35 py-3">
+        <button onClick={() => { navigate('watermark'); openView('all'); }} className="mb-6 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500" aria-label="tools local">
+          <BrandIcon className="h-8 w-8 rounded-lg" />
+        </button>
+        <div className="flex flex-col gap-2">
+          {([{ id: 'all', icon: LayoutGrid, label: t.sidebar.allTools }, { id: 'favorites', icon: Bookmark, label: t.sidebar.favorites }, { id: 'history', icon: History, label: t.sidebar.history }] as const).map(({ id, icon: Icon, label }) => (
+            <button key={id} onClick={() => openView(id)} title={label} aria-label={label} aria-pressed={view === id && sidebarOpen}
+              className={`${railButton} ${view === id && sidebarOpen ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+              <Icon className="h-[18px] w-[18px]" />
+              {view === id && sidebarOpen && <span className="absolute -left-2 h-5 w-0.5 rounded-r bg-teal-500" />}
+            </button>
+          ))}
         </div>
-
-        {/* Bottom dock section */}
-        <div className="flex flex-col items-center gap-2 w-full">
-          {/* ======================================================== */}
-          {/* SPECIAL: Download Desktop Version Button                 */}
-          {/* ======================================================== */}
-          <button
-            onClick={() => setDesktopModalOpen(true)}
-            className="group relative w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/15 transition-all shadow-xs"
-            title={t.sidebar.downloadDesktop}
-          >
-            <Download className="w-4 h-4 transition-transform group-hover:translate-y-0.5 group-active:translate-y-1" />
-            <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-          </button>
-
-          {/* Theme Toggle (Moon / Sun) */}
-          <button
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-all"
-            title={theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
-          >
-            {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />}
-          </button>
-
-          {/* Settings button */}
-          <button
-            onClick={() => {
-              setActiveTab('json-config');
-              setSidebarOpen(true);
-            }}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-              activeTab === 'json-config'
-                ? 'bg-primary/15 text-primary shadow-xs'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
-            }`}
-            title={t.sidebar.settings}
-          >
-            <Settings className="w-4 h-4" />
-          </button>
+        <div className="mt-auto flex flex-col gap-2">
+          {!sidebarOpen && <button onClick={() => setSidebarOpen(true)} className={`${railButton} text-muted-foreground hover:bg-muted`} title={t.sidebar.expand} aria-label={t.sidebar.expand}><PanelLeftOpen className="h-[18px] w-[18px]" /></button>}
+          {!desktop && <button onClick={() => setDesktopModalOpen(true)} className={`${railButton} text-teal-700 hover:bg-teal-500/10 dark:text-teal-300`} title={t.sidebar.downloadDesktop} aria-label={t.sidebar.downloadDesktop}><ArrowDownToLine className="h-[18px] w-[18px]" /></button>}
+          <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className={`${railButton} text-muted-foreground hover:bg-muted`} title={t.common.themeToggle} aria-label={t.common.themeToggle}>{theme === 'dark' ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}</button>
+          <button onClick={() => navigate('about')} className={`${railButton} text-muted-foreground hover:bg-muted`} title={t.nav.about} aria-label={t.nav.about}><Info className="h-[18px] w-[18px]" /></button>
         </div>
-      </div>
-
-      {/* ========================================================= */}
-      {/* TIER 2: Secondary Tools Drawer (Toolbit Tree & Filter)    */}
-      {/* ========================================================= */}
-      {sidebarOpen && (
-        <div className="w-60 lg:w-64 border-r border-border bg-card/70 backdrop-blur-md flex flex-col justify-between overflow-hidden transition-all duration-200 shrink-0">
-          <div className="flex flex-col flex-1 overflow-hidden">
-            {/* Drawer Top Header: TOOLS + Search + Collapse Button */}
-            <div className="h-11 px-3.5 border-b border-border/80 flex items-center justify-between shrink-0 bg-muted/20">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-muted-foreground uppercase font-mono tracking-wider">
-                  {t.sidebar.tools}
-                </span>
-                {dockFilter !== 'all' && (
-                  <Badge variant="outline" className="text-[9px] px-1 py-0 uppercase font-mono text-primary">
-                    {dockFilter}
-                  </Badge>
-                )}
-              </div>
-
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                  onClick={() => setSidebarOpen(false)}
-                  title={t.sidebar.collapse}
-                >
-                  <PanelLeftClose className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Filter Search Input Box (Toolbit-Style) */}
-            <div className="p-2.5 shrink-0 border-b border-border/50">
-              <div className="relative flex items-center">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 text-muted-foreground pointer-events-none" />
-                <input
-                  type="text"
-                  value={filterQuery}
-                  onChange={(e) => setFilterQuery(e.target.value)}
-                  placeholder={t.sidebar.filterPlaceholder}
-                  className="w-full h-8 pl-8 pr-7 text-xs rounded-lg border border-border/80 bg-muted/40 text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-1 focus:ring-primary focus:bg-card transition-all"
-                />
-                {filterQuery && (
-                  <button
-                    onClick={() => setFilterQuery('')}
-                    className="absolute right-2 text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Scrollable Tool Categories & Accordion List */}
-            <div className="flex-1 overflow-y-auto p-2 space-y-3">
-              {!hasAnyResults ? (
-                <div className="p-6 text-center text-xs text-muted-foreground">
-                  {t.sidebar.noResults}
-                </div>
-              ) : (
-                <>
-                  {/* Category 1: Image & Privacy Security */}
-                  {filteredImagePrivacy.length > 0 && (
-                    <div className="space-y-1">
-                      <button
-                        onClick={() => toggleCategory('imagePrivacy')}
-                        className="w-full flex items-center justify-between px-2 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
-                      >
-                        <div className="flex items-center gap-1.5 truncate">
-                          <span className="text-teal-500 font-mono text-[13px]">&#123;&#125;</span>
-                          <span className="truncate">{t.sidebar.categories.imagePrivacy}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground/80 shrink-0">
-                          <span>{filteredImagePrivacy.length}</span>
-                          {collapsedCategories.imagePrivacy ? (
-                            <ChevronRight className="w-3 h-3" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3" />
-                          )}
-                        </div>
-                      </button>
-
-                      {!collapsedCategories.imagePrivacy && (
-                        <div className="space-y-0.5 pl-2 border-l border-border/40 ml-2">
-                          {filteredImagePrivacy.map((tool) => {
-                            const isActive = activeTab === tool.id;
-                            const isFav = favorites.includes(tool.id);
-                            return (
-                              <div
-                                key={tool.id}
-                                onClick={() => setActiveTab(tool.id)}
-                                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs cursor-pointer transition-all group ${
-                                  isActive
-                                    ? 'bg-primary/15 text-primary font-medium shadow-xs'
-                                    : 'text-foreground/80 hover:bg-muted/70 hover:text-foreground'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2 truncate">
-                                  <span className="shrink-0">{tool.icon}</span>
-                                  <span className="truncate">{tool.name}</span>
-                                </div>
-
-                                <div className="flex items-center gap-1 shrink-0">
-                                  {tool.badge && (
-                                    <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-primary/20 text-primary">
-                                      {tool.badge}
-                                    </span>
-                                  )}
-                                  <button
-                                    onClick={(e) => toggleFavorite(e, tool.id)}
-                                    className={`opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:text-amber-400 ${
-                                      isFav ? 'opacity-100 text-amber-400' : 'text-muted-foreground'
-                                    }`}
-                                  >
-                                    <Bookmark className="w-3 h-3 fill-current" />
-                                  </button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Category 2: Config & Dev */}
-                  {filteredConfigDev.length > 0 && (
-                    <div className="space-y-1">
-                      <button
-                        onClick={() => toggleCategory('configDev')}
-                        className="w-full flex items-center justify-between px-2 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
-                      >
-                        <div className="flex items-center gap-1.5 truncate">
-                          <FileCode className="w-3.5 h-3.5 text-indigo-400" />
-                          <span className="truncate">{t.sidebar.categories.configDev}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground/80 shrink-0">
-                          <span>{filteredConfigDev.length}</span>
-                          {collapsedCategories.configDev ? (
-                            <ChevronRight className="w-3 h-3" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3" />
-                          )}
-                        </div>
-                      </button>
-
-                      {!collapsedCategories.configDev && (
-                        <div className="space-y-0.5 pl-2 border-l border-border/40 ml-2">
-                          {filteredConfigDev.map((tool) => {
-                            const isActive = activeTab === tool.id;
-                            return (
-                              <div
-                                key={tool.id}
-                                onClick={() => setActiveTab(tool.id)}
-                                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs cursor-pointer transition-all ${
-                                  isActive
-                                    ? 'bg-primary/15 text-primary font-medium shadow-xs'
-                                    : 'text-foreground/80 hover:bg-muted/70 hover:text-foreground'
-                                }`}
-                              >
-                                <div className="flex items-center gap-2 truncate">
-                                  <span className="shrink-0">{tool.icon}</span>
-                                  <span className="truncate">{tool.name}</span>
-                                </div>
-                                {tool.badge && (
-                                  <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-muted border border-border/60 text-muted-foreground">
-                                    {tool.badge}
-                                  </span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Category 3: Upcoming Roadmap (Batch 2) */}
-                  {filteredUpcoming.length > 0 && (
-                    <div className="space-y-1">
-                      <button
-                        onClick={() => toggleCategory('upcoming')}
-                        className="w-full flex items-center justify-between px-2 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
-                      >
-                        <div className="flex items-center gap-1.5 truncate">
-                          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                          <span className="truncate">{t.sidebar.categories.batch2Upcoming}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-[11px] font-mono text-muted-foreground/80 shrink-0">
-                          <span>{filteredUpcoming.length}</span>
-                          {collapsedCategories.upcoming ? (
-                            <ChevronRight className="w-3 h-3" />
-                          ) : (
-                            <ChevronDown className="w-3 h-3" />
-                          )}
-                        </div>
-                      </button>
-
-                      {!collapsedCategories.upcoming && (
-                        <div className="space-y-0.5 pl-2 border-l border-border/40 ml-2">
-                          {filteredUpcoming.map((tool) => (
-                            <div
-                              key={tool.id}
-                              onClick={() => {
-                                alert(language === 'zh'
-                                  ? `【${tool.name}】属于第二批扩展功能模块，正在本地全力研发中，敬请期待！`
-                                  : `"${tool.name}" is part of our upcoming Batch 2 release and is currently in active local development!`);
-                              }}
-                              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs cursor-pointer text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all group"
-                            >
-                              <div className="flex items-center gap-2 truncate opacity-75 group-hover:opacity-100">
-                                <span className="shrink-0">{tool.icon}</span>
-                                <span className="truncate">{tool.name}</span>
-                              </div>
-                              <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                                Soon
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
+      </nav>
+      {sidebarOpen && <>
+        <button onClick={() => setSidebarOpen(false)} tabIndex={-1} aria-hidden="true" className="fixed inset-y-0 right-0 left-[52px] z-10 bg-black/30 md:hidden" />
+        <div className="absolute inset-y-0 left-[52px] z-20 flex w-[244px] flex-col border-r border-border bg-card shadow-xl md:static md:shadow-none">
+          <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
+            <span className="font-mono text-[13px] font-semibold tracking-tight">tools <span className="text-teal-600 dark:text-teal-300">local</span></span>
+            <button onClick={() => setSidebarOpen(false)} title={`${t.sidebar.collapse} (⌘/Ctrl B)`} aria-label={t.sidebar.collapse} className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"><PanelLeftClose className="h-4 w-4" /></button>
+          </div>
+          <div className="px-3 pt-4 pb-2">
+            <div className="mb-3 flex items-center justify-between px-1 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase"><span>{title}</span><span className="font-mono tracking-normal">{visibleTools.length.toString().padStart(2, '0')}</span></div>
+            <div className="relative">
+              <Search className="pointer-events-none absolute top-2.5 left-2.5 h-3.5 w-3.5 text-muted-foreground" />
+              <input ref={searchRef} value={query} onChange={(event) => setQuery(event.target.value)} aria-label={t.sidebar.filterPlaceholder} placeholder={t.sidebar.filterPlaceholder}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') { setQuery(''); searchRef.current?.blur(); }
+                  if (event.key === 'Enter' && visibleTools[0]) navigate(visibleTools[0].id);
+                }} className="h-9 w-full rounded-lg border border-border bg-background/70 pl-8 pr-9 text-xs outline-none placeholder:text-muted-foreground/75 focus:border-teal-500/60 focus:ring-2 focus:ring-teal-500/10" />
+              {query ? <button aria-label={t.sidebar.clearSearch} onClick={() => { setQuery(''); searchRef.current?.focus(); }} className="absolute top-2 right-2 rounded p-0.5 text-muted-foreground"><X className="h-3.5 w-3.5" /></button> : <kbd className="pointer-events-none absolute top-2 right-2 rounded border border-border px-1.5 text-[10px] text-muted-foreground">/</kbd>}
             </div>
           </div>
-
-          {/* Drawer Bottom Footer (Toolbit-Style Settings & Local Status) */}
-          <div className="border-t border-border/60 bg-muted/20 p-2.5 space-y-1.5 shrink-0">
-            {/* Download Desktop App Banner Button */}
-            <button
-              onClick={() => setDesktopModalOpen(true)}
-              className="w-full p-2 rounded-lg bg-primary/10 hover:bg-primary/15 border border-primary/20 text-xs font-semibold text-primary flex items-center justify-between transition-all group shadow-xs"
-            >
-              <div className="flex items-center gap-2 truncate">
-                <Laptop className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">{t.sidebar.downloadDesktop}</span>
-              </div>
-              <Download className="w-3.5 h-3.5 shrink-0 transition-transform group-hover:translate-y-0.5" />
-            </button>
-
-            {/* Settings Link */}
-            <button
-              onClick={() => setActiveTab('json-config')}
-              className="w-full flex items-center gap-2 px-2 py-1 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-            >
-              <Settings className="w-3.5 h-3.5" />
-              <span>{t.sidebar.settings}</span>
-            </button>
-
-            {/* Runs Locally Indicator */}
-            <div className="flex items-center gap-2 px-2 py-0.5 text-[11px] text-muted-foreground">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span className="truncate">{t.sidebar.runsLocally}</span>
-            </div>
+          <nav aria-label={title} className="min-h-0 flex-1 overflow-y-auto px-3 pt-2">
+            {view === 'all' ? <>
+              {renderCategory('image', t.sidebar.categories.imagePrivacy, visibleTools.filter((tool) => tool.id !== 'json-config'))}
+              {renderCategory('config', t.sidebar.categories.configDev, visibleTools.filter((tool) => tool.id === 'json-config'))}
+            </> : <div className="space-y-0.5 pt-2">{visibleTools.map(renderTool)}</div>}
+            {visibleTools.length === 0 && <div role="status" className="py-8 text-center text-xs leading-6 text-muted-foreground">{normalizedQuery ? t.sidebar.noResults : view === 'favorites' ? t.sidebar.emptyFavorites : t.sidebar.emptyHistory}</div>}
+            {view === 'all' && !normalizedQuery && <section className="mt-2 border-t border-border/70 pt-3">
+              <button onClick={() => setCollapsed((state) => ({ ...state, upcoming: !state.upcoming }))} aria-expanded={!collapsed.upcoming} aria-controls="nav-upcoming" className="flex h-8 w-full items-center gap-1.5 px-2 text-[11px] text-muted-foreground">
+                {collapsed.upcoming ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}<span>{t.sidebar.categories.batch2Upcoming}</span><span className="ml-auto font-mono text-[10px]">{upcoming.length}</span>
+              </button>
+              {!collapsed.upcoming && <ul id="nav-upcoming" className="space-y-1 pb-3">{upcoming.map(({ name, icon: Icon }) => <li key={name} className="flex items-center gap-2 px-3 py-2 text-[11px] text-muted-foreground"><Icon className="h-3.5 w-3.5 shrink-0 opacity-60" /><span className="min-w-0 flex-1 truncate">{name}</span><span className="rounded bg-muted px-1 text-[9px]">{t.sidebar.soon}</span></li>)}</ul>}
+            </section>}
+          </nav>
+          <div className="shrink-0 border-t border-border p-3">
+            {!desktop && <button onClick={() => setDesktopModalOpen(true)} className="group mb-3 w-full rounded-xl border border-teal-600/20 bg-teal-500/[0.07] p-3 text-left transition-colors hover:border-teal-500/40 hover:bg-teal-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
+              <div className="flex items-center gap-2 text-teal-700 dark:text-teal-300"><ArrowDownToLine className="h-4 w-4" /><span className="flex-1 text-xs font-semibold">{t.sidebar.downloadDesktop}</span><ArrowUpRight className="h-3.5 w-3.5 opacity-60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></div>
+              <p className="mt-1.5 pl-6 text-[10px] text-muted-foreground">{t.sidebar.downloadDesktopDesc}</p>
+            </button>}
+            <div className="flex items-center gap-2 px-1 text-[10px] text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" /><span>{t.sidebar.runsLocally}</span><span className="ml-auto h-1.5 w-1.5 rounded-full bg-teal-500" /></div>
           </div>
         </div>
-      )}
+      </>}
     </aside>
   );
 };

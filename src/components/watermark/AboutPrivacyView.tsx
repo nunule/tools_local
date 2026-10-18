@@ -1,8 +1,9 @@
 import React from 'react';
 import { BrandIcon } from '@/components/brand/BrandIcon';
-import { ShieldCheck, Cpu, Archive, Monitor, HardDriveDownload } from 'lucide-react';
+import { ShieldCheck, Cpu, Archive, Monitor, Github, ArrowUpRight } from 'lucide-react';
 import { useI18n } from '@/i18n';
 import { Badge } from '@/components/ui/badge';
+import { GITHUB_URL } from '@/constants/projectLinks';
 
 export const AboutPrivacyView: React.FC = () => {
   const { t } = useI18n();
@@ -68,31 +69,17 @@ export const AboutPrivacyView: React.FC = () => {
           </div>
         </div>
 
-        {/* Tech Architecture Stack */}
-        <section className="rounded-xl bg-card border border-border p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <HardDriveDownload className="w-4 h-4 text-primary" />
-            <h3 className="text-sm font-bold text-foreground">{t.about.techTitle}</h3>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/80">
-              <div className="font-semibold text-foreground">React 19 & TS</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">High Performance Core</div>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/80">
-              <div className="font-semibold text-foreground">Tailwind CSS 4</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">Modern Design System</div>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/80">
-              <div className="font-semibold text-foreground">HTML5 Canvas 2D</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">Pixel-Level Processing</div>
-            </div>
-            <div className="p-3 rounded-lg bg-muted/30 border border-border/80">
-              <div className="font-semibold text-foreground">exifr & JSZip</div>
-              <div className="text-[11px] text-muted-foreground mt-0.5">EXIF Parsing & Archive</div>
-            </div>
-          </div>
-        </section>
+        <a
+          href={GITHUB_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={t.about.githubLink}
+          className="inline-flex items-center gap-2.5 rounded-lg px-1 py-2 text-sm font-medium text-foreground transition-colors hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:hover:text-teal-300"
+        >
+          <Github className="h-4 w-4" />
+          <span>GitHub</span>
+          <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+        </a>
 
         {/* Desktop Application Section */}
         <section className="rounded-xl bg-card border border-border p-6 space-y-3">
@@ -102,6 +89,20 @@ export const AboutPrivacyView: React.FC = () => {
           </div>
           <p className="text-xs text-muted-foreground leading-relaxed">
             {t.about.desktopDesc}
+          </p>
+        </section>
+
+        <section aria-labelledby="first-release-title" className="border-t border-border pt-6 pb-2">
+          <div className="mb-3 flex items-center gap-2.5">
+            <h3 id="first-release-title" className="text-sm font-semibold text-foreground">
+              {t.about.firstReleaseTitle}
+            </h3>
+            <span className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+              v1.0.0
+            </span>
+          </div>
+          <p className="text-xs leading-6 text-muted-foreground">
+            {t.about.firstReleaseDescription}
           </p>
         </section>
       </div>

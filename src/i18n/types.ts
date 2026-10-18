@@ -282,6 +282,8 @@ export interface Translations {
     close: string;
     cmdV: string;
     cmdS: string;
+    searchTools: string;
+    toggleSidebar: string;
     wheel: string;
     drag: string;
     compareKey: string;
@@ -300,7 +302,9 @@ export interface Translations {
       batchTitle: string;
       batchDesc: string;
     };
-    techTitle: string;
+    githubLink: string;
+    firstReleaseTitle: string;
+    firstReleaseDescription: string;
     desktopTitle: string;
     desktopDesc: string;
   };
@@ -316,6 +320,13 @@ export interface Translations {
   };
   sidebar: {
     tools: string;
+    workspace: string;
+    save: string;
+    unsave: string;
+    clearSearch: string;
+    emptyFavorites: string;
+    emptyHistory: string;
+    soon: string;
     filterPlaceholder: string;
     noResults: string;
     collapse: string;
@@ -350,23 +361,25 @@ export interface Translations {
   desktopDownload: {
     title: string;
     subtitle: string;
-    pwaTitle: string;
-    pwaDesc: string;
-    pwaBtn: string;
-    pwaInstalled: string;
-    macTitle: string;
-    macDesc: string;
-    macBtn: string;
-    winTitle: string;
-    winDesc: string;
-    winBtn: string;
-    linuxTitle: string;
-    linuxDesc: string;
-    linuxBtn: string;
-    standaloneTitle: string;
-    standaloneDesc: string;
-    standaloneBtn: string;
-    standaloneGenerating: string;
+    macArm: string;
+    macIntel: string;
+    windows: string;
+    linux: string;
+    macRequirement: string;
+    windowsRequirement: string;
+    linuxRequirement: string;
+    available: string;
+    unavailable: string;
+    download: string;
+    loading: string;
+    loadError: string;
+    retry: string;
+    downloadStarted: string;
+    installHint: string;
+    macInstall: string;
+    windowsInstall: string;
+    linuxInstall: string;
+    signingNote: string;
     close: string;
   };
 }

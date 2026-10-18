@@ -6,8 +6,8 @@
   "build": {
     "beforeDevCommand": "npm run dev -- --host 127.0.0.1 --port 1420 --strictPort",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist"
+    "beforeBuildCommand": "npm run build:desktop",
+    "frontendDist": "../dist-desktop"
   },
   "app": {
     "windows": [
