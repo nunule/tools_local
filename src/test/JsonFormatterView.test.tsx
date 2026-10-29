@@ -115,4 +115,57 @@ describe('JsonFormatterView Component', () => {
     expect(screen.getByText('Safe Repair')).toBeInTheDocument();
     expect(screen.getByText(/Valid JSON/)).toBeInTheDocument();
   });
+
+  it('guarantees uniform button shapes with shrink-0 and whitespace-nowrap across toolbar items', () => {
+    const { container } = render(<JsonFormatterView />);
+
+    // Top toolbar has horizontal overflow safety and scrollbar suppression
+    const toolbar = container.querySelector('.border-b.bg-card\\/80');
+    expect(toolbar).toHaveClass('overflow-x-auto');
+    expect(toolbar).toHaveClass('scrollbar-none');
+
+    const beautify2Btn = screen.getByRole('button', { name: '2 空格美化' });
+    const beautify4Btn = screen.getByRole('button', { name: '4 空格美化' });
+    const tabBtn = screen.getByRole('button', { name: 'Tab 制表符' });
+    const minifyBtn = screen.getByRole('button', { name: '极速压缩' });
+    const safeFixBtn = screen.getByRole('button', { name: '智能容错修复' });
+
+    // Indent buttons have shrink-0, whitespace-nowrap, and fixed h-6
+    for (const btn of [beautify2Btn, beautify4Btn, tabBtn]) {
+      expect(btn.className).toContain('shrink-0');
+      expect(btn.className).toContain('whitespace-nowrap');
+      expect(btn.className).toContain('h-6');
+    }
+
+    // Action buttons have shrink-0 and whitespace-nowrap
+    for (const btn of [minifyBtn, safeFixBtn]) {
+      expect(btn.className).toContain('shrink-0');
+      expect(btn.className).toContain('whitespace-nowrap');
+      expect(btn.className).toContain('h-7');
+    }
+  });
+
+  it('opens sample and transform dropdowns via portal without clipping and handles selection and escape key', () => {
+    render(<JsonFormatterView />);
+
+    const sampleBtn = screen.getByRole('button', { name: /加载内置样例/ });
+    expect(sampleBtn).toBeInTheDocument();
+
+    // Open sample dropdown
+    fireEvent.click(sampleBtn);
+    const unicodeOption = screen.getByText('Unicode 中文示例');
+    expect(unicodeOption).toBeInTheDocument();
+
+    // Click sample option to load sample
+    fireEvent.click(unicodeOption);
+    expect(screen.queryByText('Unicode 中文示例')).not.toBeInTheDocument();
+
+    // Open transform dropdown and close with Escape
+    const transformBtn = screen.getByRole('button', { name: /转换/ });
+    fireEvent.click(transformBtn);
+    expect(screen.getByText('转义 (Escape)')).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(screen.queryByText('转义 (Escape)')).not.toBeInTheDocument();
+  });
 });

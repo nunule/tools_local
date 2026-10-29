@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { oneDark } from '@codemirror/theme-one-dark';
@@ -46,6 +47,101 @@ import {
   UNICODE_DEMO_SAMPLE,
   ESCAPED_DEMO_SAMPLE,
 } from '@/constants/jsonSamples';
+
+interface ToolbarDropdownProps {
+  align?: 'left' | 'right';
+  trigger: (props: {
+    ref: React.RefObject<HTMLButtonElement | null>;
+    isOpen: boolean;
+    toggle: () => void;
+  }) => React.ReactNode;
+  children: (props: { close: () => void }) => React.ReactNode;
+}
+
+const ToolbarDropdown: React.FC<ToolbarDropdownProps> = ({ align = 'left', trigger, children }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const [coords, setCoords] = useState<{ top: number; left?: number; right?: number } | null>(null);
+
+  const updatePosition = useCallback(() => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      if (align === 'right') {
+        setCoords({
+          top: rect.bottom + 4,
+          right: Math.max(8, window.innerWidth - rect.right),
+        });
+      } else {
+        setCoords({
+          top: rect.bottom + 4,
+          left: Math.max(8, rect.left),
+        });
+      }
+    }
+  }, [align]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    updatePosition();
+    const handleScrollOrResize = () => updatePosition();
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        triggerRef.current?.contains(target) ||
+        menuRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setIsOpen(false);
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    window.addEventListener('pointerdown', handleClickOutside);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('pointerdown', handleClickOutside);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, updatePosition]);
+
+  return (
+    <>
+      {trigger({
+        ref: triggerRef,
+        isOpen,
+        toggle: () => {
+          if (!isOpen) updatePosition();
+          setIsOpen((prev) => !prev);
+        },
+      })}
+      {isOpen &&
+        coords &&
+        createPortal(
+          <div
+            ref={menuRef}
+            style={{
+              position: 'fixed',
+              top: `${coords.top}px`,
+              ...(coords.left !== undefined ? { left: `${coords.left}px` } : {}),
+              ...(coords.right !== undefined ? { right: `${coords.right}px` } : {}),
+            }}
+            className="z-50 min-w-44 flex flex-col bg-card border border-border rounded-lg shadow-xl py-1 text-xs select-none"
+          >
+            {children({ close: () => setIsOpen(false) })}
+          </div>,
+          document.body
+        )}
+    </>
+  );
+};
 
 export const JsonFormatterView: React.FC = () => {
   const { t, language } = useI18n();
@@ -490,18 +586,18 @@ export const JsonFormatterView: React.FC = () => {
       />
 
       {/* Top Main Toolbar */}
-      <div className="h-12 border-b border-border bg-card/80 backdrop-blur-xs px-3 sm:px-4 flex items-center justify-between shrink-0 gap-2">
+      <div className="h-12 border-b border-border bg-card/80 backdrop-blur-xs px-2.5 sm:px-4 flex items-center justify-between shrink-0 gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none min-w-0">
         {/* Left: View Mode Toggle & Sample Loader */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <div className="flex items-center gap-1.5 mr-1 sm:mr-2">
-            <Braces className="w-4 h-4 text-teal-600 dark:text-teal-400" />
-            <span className="hidden md:inline text-xs font-semibold tracking-tight">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 mr-1 sm:mr-2 shrink-0">
+            <Braces className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+            <span className="hidden xl:inline text-xs font-semibold tracking-tight whitespace-nowrap">
               {t.jsonFormatter.title}
             </span>
           </div>
 
           {/* Dual / Single View Toggle */}
-          <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5">
+          <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5 shrink-0 h-7">
             <button
               onClick={() => {
                 if (viewMode !== 'split') {
@@ -511,14 +607,15 @@ export const JsonFormatterView: React.FC = () => {
                 }
               }}
               title={t.jsonFormatter.splitView}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+              aria-label={t.jsonFormatter.splitView}
+              className={`flex items-center gap-1 px-2 h-6 rounded-md text-xs shrink-0 whitespace-nowrap transition-colors ${
                 viewMode === 'split'
                   ? 'bg-card text-teal-700 dark:text-teal-300 shadow-xs font-medium'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Columns2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{t.jsonFormatter.splitView}</span>
+              <Columns2 className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden md:inline">{t.jsonFormatter.splitView}</span>
             </button>
             <button
               onClick={() => {
@@ -528,67 +625,91 @@ export const JsonFormatterView: React.FC = () => {
                 }
               }}
               title={t.jsonFormatter.singleView}
-              className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+              aria-label={t.jsonFormatter.singleView}
+              className={`flex items-center gap-1 px-2 h-6 rounded-md text-xs shrink-0 whitespace-nowrap transition-colors ${
                 viewMode === 'single'
                   ? 'bg-card text-teal-700 dark:text-teal-300 shadow-xs font-medium'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              <Square className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{t.jsonFormatter.singleView}</span>
+              <Square className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden md:inline">{t.jsonFormatter.singleView}</span>
             </button>
           </div>
 
           {/* Sample Preset Button */}
-          <div className="relative group">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs gap-1 px-2 text-muted-foreground hover:text-foreground"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden lg:inline">{t.jsonFormatter.loadSample}</span>
-              <ChevronDown className="w-3 h-3 opacity-60" />
-            </Button>
-            <div className="absolute left-0 top-full mt-1 hidden group-hover:flex flex-col bg-card border border-border rounded-lg shadow-xl py-1 z-40 min-w-44">
-              <button
-                onClick={() => handleLoadSample(DEFAULT_JSON_SAMPLE)}
-                className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground"
+          <ToolbarDropdown
+            align="left"
+            trigger={({ ref, isOpen, toggle }) => (
+              <Button
+                ref={ref}
+                variant="outline"
+                size="sm"
+                onClick={toggle}
+                className={`h-7 text-xs gap-1 px-2 text-muted-foreground hover:text-foreground shrink-0 whitespace-nowrap ${
+                  isOpen ? 'bg-muted text-foreground' : ''
+                }`}
+                title={t.jsonFormatter.loadSample}
+                aria-label={t.jsonFormatter.loadSample}
+                aria-expanded={isOpen}
               >
-                {language === 'zh' ? '完整业务响应 (含大数/注释)' : 'Full API Sample (BigInt/Comments)'}
-              </button>
-              <button
-                onClick={() => handleLoadSample(UNICODE_DEMO_SAMPLE)}
-                className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground"
-              >
-                {language === 'zh' ? 'Unicode 中文示例' : 'Unicode Chinese Demo'}
-              </button>
-              <button
-                onClick={() => handleLoadSample(ESCAPED_DEMO_SAMPLE)}
-                className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground"
-              >
-                {language === 'zh' ? '已转义 JSON 字符串' : 'Escaped JSON String'}
-              </button>
-            </div>
-          </div>
+                <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span className="hidden xl:inline">{t.jsonFormatter.loadSample}</span>
+                <ChevronDown className="w-3 h-3 opacity-60 shrink-0" />
+              </Button>
+            )}
+          >
+            {({ close }) => (
+              <>
+                <button
+                  onClick={() => {
+                    handleLoadSample(DEFAULT_JSON_SAMPLE);
+                    close();
+                  }}
+                  className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground whitespace-nowrap"
+                >
+                  {language === 'zh' ? '完整业务响应 (含大数/注释)' : 'Full API Sample (BigInt/Comments)'}
+                </button>
+                <button
+                  onClick={() => {
+                    handleLoadSample(UNICODE_DEMO_SAMPLE);
+                    close();
+                  }}
+                  className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground whitespace-nowrap"
+                >
+                  {language === 'zh' ? 'Unicode 中文示例' : 'Unicode Chinese Demo'}
+                </button>
+                <button
+                  onClick={() => {
+                    handleLoadSample(ESCAPED_DEMO_SAMPLE);
+                    close();
+                  }}
+                  className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground whitespace-nowrap"
+                >
+                  {language === 'zh' ? '已转义 JSON 字符串' : 'Escaped JSON String'}
+                </button>
+              </>
+            )}
+          </ToolbarDropdown>
 
           {/* Clear Button */}
           <Button
             variant="ghost"
             size="sm"
             onClick={handleClear}
-            className="h-7 text-xs gap-1 px-2 text-muted-foreground hover:text-destructive"
+            className="h-7 text-xs gap-1 px-2 text-muted-foreground hover:text-destructive shrink-0 whitespace-nowrap"
             title={t.jsonFormatter.clear}
+            aria-label={t.jsonFormatter.clear}
           >
-            <Trash2 className="w-3.5 h-3.5" />
+            <Trash2 className="w-3.5 h-3.5 shrink-0" />
             <span className="hidden xl:inline">{t.jsonFormatter.clear}</span>
           </Button>
         </div>
 
         {/* Center: Core Action Buttons */}
-        <div className="flex items-center gap-1.5 overflow-x-auto py-1">
+        <div className="flex items-center gap-1.5 shrink-0 py-1">
           {/* Beautify Indent Selector */}
-          <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5">
+          <div className="flex items-center rounded-lg border border-border bg-muted/40 p-0.5 shrink-0 h-7">
             {indentOptions.map((opt) => (
               <button
                 key={String(opt.value)}
@@ -596,11 +717,13 @@ export const JsonFormatterView: React.FC = () => {
                   setIndent(opt.value);
                   handleFormat(opt.value);
                 }}
-                className={`px-2 py-1 rounded text-xs transition-colors ${
+                className={`px-2 sm:px-2.5 h-6 rounded-md text-xs shrink-0 whitespace-nowrap transition-colors flex items-center justify-center font-medium ${
                   indent === opt.value
-                    ? 'bg-teal-500 text-white font-medium shadow-xs'
+                    ? 'bg-teal-500 text-white shadow-xs'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
+                title={opt.label}
+                aria-label={opt.label}
               >
                 {opt.label}
               </button>
@@ -612,11 +735,12 @@ export const JsonFormatterView: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleMinify}
-            className="h-7 text-xs gap-1 px-2.5"
+            className="h-7 text-xs gap-1 px-2 sm:px-2.5 shrink-0 whitespace-nowrap"
             title={t.jsonFormatter.minify}
+            aria-label={t.jsonFormatter.minify}
           >
-            <Minimize2 className="w-3.5 h-3.5 text-sky-500" />
-            <span>{t.jsonFormatter.minify}</span>
+            <Minimize2 className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+            <span className="hidden md:inline">{t.jsonFormatter.minify}</span>
           </Button>
 
           {/* Safe Repair (FSM) */}
@@ -624,11 +748,12 @@ export const JsonFormatterView: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleSafeRepair}
-            className="h-7 text-xs gap-1 px-2.5 border-teal-500/30 text-teal-700 dark:text-teal-300 hover:bg-teal-500/10"
+            className="h-7 text-xs gap-1 px-2 sm:px-2.5 border-teal-500/30 text-teal-700 dark:text-teal-300 hover:bg-teal-500/10 shrink-0 whitespace-nowrap"
             title={t.jsonFormatter.safeFix}
+            aria-label={t.jsonFormatter.safeFix}
           >
-            <Wand2 className="w-3.5 h-3.5 text-teal-500" />
-            <span>{t.jsonFormatter.safeFix}</span>
+            <Wand2 className="w-3.5 h-3.5 text-teal-500 shrink-0" />
+            <span className="hidden md:inline">{t.jsonFormatter.safeFix}</span>
           </Button>
 
           {/* Sort Keys (A-Z) */}
@@ -636,98 +761,129 @@ export const JsonFormatterView: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleSortKeys}
-            className="h-7 text-xs gap-1 px-2.5 hidden sm:inline-flex"
+            className="h-7 text-xs gap-1 px-2 sm:px-2.5 hidden sm:inline-flex shrink-0 whitespace-nowrap"
             title={t.jsonFormatter.sortKeys}
+            aria-label={t.jsonFormatter.sortKeys}
           >
-            <ArrowDownAZ className="w-3.5 h-3.5 text-indigo-500" />
-            <span className="hidden md:inline">{t.jsonFormatter.sortKeys}</span>
+            <ArrowDownAZ className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+            <span className="hidden lg:inline">{t.jsonFormatter.sortKeys}</span>
           </Button>
 
           {/* More Productivity Tools Dropdown */}
-          <div className="relative group">
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs gap-1 px-2 text-muted-foreground hover:text-foreground"
-            >
-              <Code2 className="w-3.5 h-3.5 text-emerald-500" />
-              <span className="hidden md:inline">{language === 'zh' ? '转换' : 'Transform'}</span>
-              <ChevronDown className="w-3 h-3 opacity-60" />
-            </Button>
-            <div className="absolute right-0 top-full mt-1 hidden group-hover:flex flex-col bg-card border border-border rounded-lg shadow-xl py-1 z-40 min-w-44">
-              <button
-                onClick={handleEscape}
-                className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground flex items-center justify-between"
+          <ToolbarDropdown
+            align="right"
+            trigger={({ ref, isOpen, toggle }) => (
+              <Button
+                ref={ref}
+                variant="outline"
+                size="sm"
+                onClick={toggle}
+                className={`h-7 text-xs gap-1 px-2 text-muted-foreground hover:text-foreground shrink-0 whitespace-nowrap ${
+                  isOpen ? 'bg-muted text-foreground' : ''
+                }`}
+                title={language === 'zh' ? '转换' : 'Transform'}
+                aria-label={language === 'zh' ? '转换' : 'Transform'}
+                aria-expanded={isOpen}
               >
-                <span>{t.jsonFormatter.escape}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">\"</span>
-              </button>
-              <button
-                onClick={handleUnescape}
-                className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground flex items-center justify-between"
-              >
-                <span>{t.jsonFormatter.unescape}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">"</span>
-              </button>
-              <div className="h-px bg-border my-1" />
-              <button
-                onClick={handleToUnicode}
-                className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground flex items-center justify-between"
-              >
-                <span>{t.jsonFormatter.toUnicode}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">\u4f60</span>
-              </button>
-              <button
-                onClick={handleToChinese}
-                className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground flex items-center justify-between"
-              >
-                <span>{t.jsonFormatter.toChinese}</span>
-                <span className="font-mono text-[10px] text-muted-foreground">中</span>
-              </button>
-            </div>
-          </div>
+                <Code2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                <span className="hidden md:inline">{language === 'zh' ? '转换' : 'Transform'}</span>
+                <ChevronDown className="w-3 h-3 opacity-60 shrink-0" />
+              </Button>
+            )}
+          >
+            {({ close }) => (
+              <>
+                <button
+                  onClick={() => {
+                    handleEscape();
+                    close();
+                  }}
+                  className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground flex items-center justify-between whitespace-nowrap"
+                >
+                  <span>{t.jsonFormatter.escape}</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">\"</span>
+                </button>
+                <button
+                  onClick={() => {
+                    handleUnescape();
+                    close();
+                  }}
+                  className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground flex items-center justify-between whitespace-nowrap"
+                >
+                  <span>{t.jsonFormatter.unescape}</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">"</span>
+                </button>
+                <div className="h-px bg-border my-1" />
+                <button
+                  onClick={() => {
+                    handleToUnicode();
+                    close();
+                  }}
+                  className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground flex items-center justify-between whitespace-nowrap"
+                >
+                  <span>{t.jsonFormatter.toUnicode}</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">\u4f60</span>
+                </button>
+                <button
+                  onClick={() => {
+                    handleToChinese();
+                    close();
+                  }}
+                  className="px-3 py-1.5 text-left text-xs text-foreground/80 hover:bg-muted hover:text-foreground flex items-center justify-between whitespace-nowrap"
+                >
+                  <span>{t.jsonFormatter.toChinese}</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">中</span>
+                </button>
+              </>
+            )}
+          </ToolbarDropdown>
         </div>
 
         {/* Right: Export & Copy & Fullscreen */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           <Button
             variant="outline"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="h-7 text-xs gap-1 px-2 hidden sm:inline-flex"
+            className="h-7 text-xs gap-1 px-2 hidden sm:inline-flex shrink-0 whitespace-nowrap"
             title={t.jsonFormatter.uploadFile}
+            aria-label={t.jsonFormatter.uploadFile}
           >
-            <Upload className="w-3.5 h-3.5" />
-            <span className="hidden lg:inline">{t.jsonFormatter.uploadFile}</span>
+            <Upload className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden xl:inline">{t.jsonFormatter.uploadFile}</span>
           </Button>
 
           <Button
             variant="outline"
             size="sm"
             onClick={handleDownload}
-            className="h-7 text-xs gap-1 px-2"
+            className="h-7 text-xs gap-1 px-2 shrink-0 whitespace-nowrap"
             title={t.jsonFormatter.download}
+            aria-label={t.jsonFormatter.download}
           >
-            <Download className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">{t.jsonFormatter.download}</span>
+            <Download className="w-3.5 h-3.5 shrink-0" />
+            <span className="hidden lg:inline">{t.jsonFormatter.download}</span>
           </Button>
 
           <Button
             variant="default"
             size="sm"
             onClick={handleCopy}
-            className="h-7 text-xs gap-1 px-3 shadow-xs bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-500 dark:hover:bg-teal-600"
+            className="h-7 text-xs gap-1 px-2.5 sm:px-3 shadow-xs bg-teal-600 hover:bg-teal-700 text-white dark:bg-teal-500 dark:hover:bg-teal-600 shrink-0 whitespace-nowrap"
+            title={copied ? t.jsonFormatter.copied : t.jsonFormatter.copy}
+            aria-label={copied ? t.jsonFormatter.copied : t.jsonFormatter.copy}
           >
-            {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? t.jsonFormatter.copied : t.jsonFormatter.copy}</span>
+            {copied ? <Check className="w-3.5 h-3.5 shrink-0" /> : <Copy className="w-3.5 h-3.5 shrink-0" />}
+            <span className="hidden sm:inline">{copied ? t.jsonFormatter.copied : t.jsonFormatter.copy}</span>
           </Button>
 
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsFullscreen((prev) => !prev)}
-            className="h-7 w-7 text-muted-foreground"
+            className="h-7 w-7 text-muted-foreground shrink-0"
             title={isFullscreen ? t.jsonFormatter.exitFullscreen : t.jsonFormatter.fullscreen}
+            aria-label={isFullscreen ? t.jsonFormatter.exitFullscreen : t.jsonFormatter.fullscreen}
           >
             {isFullscreen ? <Minimize className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </Button>
@@ -739,7 +895,7 @@ export const JsonFormatterView: React.FC = () => {
         <div className="bg-destructive/10 border-b border-destructive/20 text-destructive text-xs px-4 py-1.5 flex items-center justify-between shrink-0 select-none">
           <div className="flex items-center gap-2 overflow-hidden">
             <AlertTriangle className="w-4 h-4 shrink-0" />
-            <span className="font-semibold">{t.jsonFormatter.syntaxError}:</span>
+            <span className="font-semibold shrink-0">{t.jsonFormatter.syntaxError}:</span>
             <span className="truncate">{error.message}</span>
             <span className="font-mono text-[11px] opacity-80 shrink-0">
               ({t.jsonFormatter.line} {error.line}, {t.jsonFormatter.column} {error.column})
@@ -750,7 +906,7 @@ export const JsonFormatterView: React.FC = () => {
               variant="outline"
               size="sm"
               onClick={handleJumpToError}
-              className="h-6 text-[11px] px-2 border-destructive/30 hover:bg-destructive/10 text-destructive"
+              className="h-6 text-[11px] px-2 border-destructive/30 hover:bg-destructive/10 text-destructive shrink-0 whitespace-nowrap"
             >
               {t.jsonFormatter.jumpToError}
             </Button>
@@ -758,7 +914,7 @@ export const JsonFormatterView: React.FC = () => {
               variant="default"
               size="sm"
               onClick={handleSafeRepair}
-              className="h-6 text-[11px] px-2 bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="h-6 text-[11px] px-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 shrink-0 whitespace-nowrap"
             >
               {t.jsonFormatter.safeFix}
             </Button>

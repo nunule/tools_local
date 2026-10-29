@@ -96,4 +96,29 @@ describe('Toolbit-Style Sidebar & Desktop Download', () => {
     expect(screen.getByText('Configuration')).toBeInTheDocument();
     expect(screen.getByText('Runs locally')).toBeInTheDocument();
   });
+
+  it('moves json-config to bottom-left settings and retains json-format in tools list', () => {
+    render(<Sidebar />);
+
+    // Under tools drawer, "JSON 格式化" is present
+    expect(screen.getByRole('button', { name: 'JSON 格式化' })).toBeInTheDocument();
+
+    // "JSON 配置" is NOT in the tools drawer list
+    expect(screen.queryByRole('button', { name: 'JSON 配置' })).not.toBeInTheDocument();
+
+    // Settings buttons are present in rail and drawer footer
+    const settingsButtons = screen.getAllByRole('button', { name: /偏好设置/ });
+    expect(settingsButtons.length).toBeGreaterThanOrEqual(1);
+
+    // Clicking settings button navigates to json-config without polluting recentTools
+    fireEvent.click(settingsButtons[0]);
+    expect(useWatermarkStore.getState().activeTab).toBe('json-config');
+    expect(useWatermarkStore.getState().recentTools).not.toContain('json-config');
+
+    // Clicking json-format tool navigates and records in recentTools
+    const jsonFormatBtn = screen.getByRole('button', { name: 'JSON 格式化' });
+    fireEvent.click(jsonFormatBtn);
+    expect(useWatermarkStore.getState().activeTab).toBe('json-format');
+    expect(useWatermarkStore.getState().recentTools[0]).toBe('json-format');
+  });
 });

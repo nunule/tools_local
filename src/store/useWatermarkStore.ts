@@ -218,7 +218,7 @@ export const useWatermarkStore = create<WatermarkStoreState>()(
       activeTab: 'watermark',
       setActiveTab: (activeTab) => set((state) => ({
         activeTab,
-        recentTools: activeTab === 'about'
+        recentTools: (activeTab === 'about' || activeTab === 'json-config')
           ? state.recentTools
           : [activeTab, ...state.recentTools.filter((tab) => tab !== activeTab)].slice(0, 6),
       })),

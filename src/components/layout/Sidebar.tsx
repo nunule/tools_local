@@ -3,7 +3,7 @@ import {
   ArrowDownToLine, ArrowUpRight, Bookmark, Braces, Camera, ChevronDown, ChevronRight,
   CreditCard, Crop, FileCode2, History, Info, LayoutGrid, Moon, PanelLeftClose,
   PanelLeftOpen, Search, ShieldCheck, Stamp, Sun, Paintbrush, X,
-  QrCode, ScanFace, FileText, Binary, FileSpreadsheet, type LucideIcon,
+  QrCode, ScanFace, FileText, Binary, FileSpreadsheet, Settings, type LucideIcon,
 } from 'lucide-react';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { BrandIcon } from '@/components/brand/BrandIcon';
@@ -35,7 +35,6 @@ export const Sidebar: React.FC = () => {
     { id: 'screenshot', name: t.nav.screenshot, keywords: 'screenshot crop 截图 裁切', icon: Crop },
     { id: 'id-copy', name: t.nav.idCopy, keywords: 'id copy card 证件 副本 身份证', icon: CreditCard },
     { id: 'json-format', name: t.nav.jsonFormat, keywords: 'json format formatter beautify minify bigInt 格式化 美化 压缩 大数 转义 容错', icon: Braces },
-    { id: 'json-config', name: t.configEditor.title, keywords: 'json config 配置', icon: FileCode2 },
   ];
   const upcoming = [
     { name: t.sidebar.upcomingTools.barcodeMask, icon: QrCode },
@@ -144,6 +143,10 @@ export const Sidebar: React.FC = () => {
           {!sidebarOpen && <button onClick={() => setSidebarOpen(true)} className={`${railButton} text-muted-foreground hover:bg-muted`} title={t.sidebar.expand} aria-label={t.sidebar.expand}><PanelLeftOpen className="h-[18px] w-[18px]" /></button>}
           {!desktop && <button onClick={() => setDesktopModalOpen(true)} className={`${railButton} text-teal-700 hover:bg-teal-500/10 dark:text-teal-300`} title={t.sidebar.downloadDesktop} aria-label={t.sidebar.downloadDesktop}><ArrowDownToLine className="h-[18px] w-[18px]" /></button>}
           <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className={`${railButton} text-muted-foreground hover:bg-muted`} title={t.common.themeToggle} aria-label={t.common.themeToggle}>{theme === 'dark' ? <Sun className="h-[18px] w-[18px]" /> : <Moon className="h-[18px] w-[18px]" />}</button>
+          <button onClick={() => navigate('json-config')} className={`${railButton} ${activeTab === 'json-config' ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300' : 'text-muted-foreground hover:bg-muted'}`} title={t.sidebar.settings} aria-label={t.sidebar.settings} aria-current={activeTab === 'json-config' ? 'page' : undefined}>
+            <Settings className="h-[18px] w-[18px]" />
+            {activeTab === 'json-config' && <span className="absolute -left-2 h-5 w-0.5 rounded-r bg-teal-500" />}
+          </button>
           <button onClick={() => navigate('about')} className={`${railButton} text-muted-foreground hover:bg-muted`} title={t.nav.about} aria-label={t.nav.about}><Info className="h-[18px] w-[18px]" /></button>
         </div>
       </nav>
@@ -168,8 +171,8 @@ export const Sidebar: React.FC = () => {
           </div>
           <nav aria-label={title} className="min-h-0 flex-1 overflow-y-auto px-3 pt-2">
             {view === 'all' ? <>
-              {renderCategory('image', t.sidebar.categories.imagePrivacy, visibleTools.filter((tool) => tool.id !== 'json-config' && tool.id !== 'json-format'))}
-              {renderCategory('config', t.sidebar.categories.configDev, visibleTools.filter((tool) => tool.id === 'json-config' || tool.id === 'json-format'))}
+              {renderCategory('image', t.sidebar.categories.imagePrivacy, visibleTools.filter((tool) => tool.id !== 'json-format'))}
+              {renderCategory('config', t.sidebar.categories.configDev, visibleTools.filter((tool) => tool.id === 'json-format'))}
             </> : <div className="space-y-0.5 pt-2">{visibleTools.map(renderTool)}</div>}
             {visibleTools.length === 0 && <div role="status" className="py-8 text-center text-xs leading-6 text-muted-foreground">{normalizedQuery ? t.sidebar.noResults : view === 'favorites' ? t.sidebar.emptyFavorites : t.sidebar.emptyHistory}</div>}
             {view === 'all' && !normalizedQuery && <section className="mt-2 border-t border-border/70 pt-3">
@@ -180,10 +183,24 @@ export const Sidebar: React.FC = () => {
             </section>}
           </nav>
           <div className="shrink-0 border-t border-border p-3">
-            {!desktop && <button onClick={() => setDesktopModalOpen(true)} className="group mb-3 w-full rounded-xl border border-teal-600/20 bg-teal-500/[0.07] p-3 text-left transition-colors hover:border-teal-500/40 hover:bg-teal-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
+            {!desktop && <button onClick={() => setDesktopModalOpen(true)} className="group mb-2.5 w-full rounded-xl border border-teal-600/20 bg-teal-500/[0.07] p-2.5 text-left transition-colors hover:border-teal-500/40 hover:bg-teal-500/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
               <div className="flex items-center gap-2 text-teal-700 dark:text-teal-300"><ArrowDownToLine className="h-4 w-4" /><span className="flex-1 text-xs font-semibold">{t.sidebar.downloadDesktop}</span><ArrowUpRight className="h-3.5 w-3.5 opacity-60 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></div>
-              <p className="mt-1.5 pl-6 text-[10px] text-muted-foreground">{t.sidebar.downloadDesktopDesc}</p>
+              <p className="mt-1 pl-6 text-[10px] text-muted-foreground">{t.sidebar.downloadDesktopDesc}</p>
             </button>}
+            <button
+              onClick={() => navigate('json-config')}
+              aria-current={activeTab === 'json-config' ? 'page' : undefined}
+              className={`mb-2.5 flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-left text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 ${
+                activeTab === 'json-config'
+                  ? 'bg-teal-500/10 font-semibold text-teal-700 dark:text-teal-300'
+                  : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+              }`}
+              title={t.sidebar.settings}
+            >
+              <Settings className="h-4 w-4 shrink-0" />
+              <span className="flex-1 truncate">{t.sidebar.settings}</span>
+              <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[9px] text-muted-foreground">JSON</span>
+            </button>
             <div className="flex items-center gap-2 px-1 text-[10px] text-muted-foreground"><ShieldCheck className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" /><span>{t.sidebar.runsLocally}</span><span className="ml-auto h-1.5 w-1.5 rounded-full bg-teal-500" /></div>
           </div>
         </div>
