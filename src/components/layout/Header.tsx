@@ -12,6 +12,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenShortcuts }) => {
   const labels = {
     watermark: t.nav.watermark, redact: t.nav.redact, exif: t.nav.exif,
     screenshot: t.nav.screenshot, 'id-copy': t.nav.idCopy,
+    'json-format': t.nav.jsonFormat,
     'json-config': t.configEditor.title, about: t.nav.about,
   };
   return (

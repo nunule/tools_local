@@ -4,6 +4,7 @@ export type ActiveToolTab =
   | 'exif' 
   | 'screenshot' 
   | 'id-copy' 
+  | 'json-format'
   | 'json-config' 
   | 'about';
 

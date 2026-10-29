@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  ArrowDownToLine, ArrowUpRight, Bookmark, Camera, ChevronDown, ChevronRight,
+  ArrowDownToLine, ArrowUpRight, Bookmark, Braces, Camera, ChevronDown, ChevronRight,
   CreditCard, Crop, FileCode2, History, Info, LayoutGrid, Moon, PanelLeftClose,
   PanelLeftOpen, Search, ShieldCheck, Stamp, Sun, Paintbrush, X,
   QrCode, ScanFace, FileText, Binary, FileSpreadsheet, type LucideIcon,
@@ -34,6 +34,7 @@ export const Sidebar: React.FC = () => {
     { id: 'exif', name: t.nav.exif, keywords: 'exif gps camera metadata 照片 清理 定位 元数据', icon: Camera },
     { id: 'screenshot', name: t.nav.screenshot, keywords: 'screenshot crop 截图 裁切', icon: Crop },
     { id: 'id-copy', name: t.nav.idCopy, keywords: 'id copy card 证件 副本 身份证', icon: CreditCard },
+    { id: 'json-format', name: t.nav.jsonFormat, keywords: 'json format formatter beautify minify bigInt 格式化 美化 压缩 大数 转义 容错', icon: Braces },
     { id: 'json-config', name: t.configEditor.title, keywords: 'json config 配置', icon: FileCode2 },
   ];
   const upcoming = [
@@ -167,8 +168,8 @@ export const Sidebar: React.FC = () => {
           </div>
           <nav aria-label={title} className="min-h-0 flex-1 overflow-y-auto px-3 pt-2">
             {view === 'all' ? <>
-              {renderCategory('image', t.sidebar.categories.imagePrivacy, visibleTools.filter((tool) => tool.id !== 'json-config'))}
-              {renderCategory('config', t.sidebar.categories.configDev, visibleTools.filter((tool) => tool.id === 'json-config'))}
+              {renderCategory('image', t.sidebar.categories.imagePrivacy, visibleTools.filter((tool) => tool.id !== 'json-config' && tool.id !== 'json-format'))}
+              {renderCategory('config', t.sidebar.categories.configDev, visibleTools.filter((tool) => tool.id === 'json-config' || tool.id === 'json-format'))}
             </> : <div className="space-y-0.5 pt-2">{visibleTools.map(renderTool)}</div>}
             {visibleTools.length === 0 && <div role="status" className="py-8 text-center text-xs leading-6 text-muted-foreground">{normalizedQuery ? t.sidebar.noResults : view === 'favorites' ? t.sidebar.emptyFavorites : t.sidebar.emptyHistory}</div>}
             {view === 'all' && !normalizedQuery && <section className="mt-2 border-t border-border/70 pt-3">

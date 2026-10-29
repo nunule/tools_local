@@ -11,6 +11,7 @@ import { RedactStudioView } from '@/components/redact/RedactStudioView';
 import { ExifCleanerView } from '@/components/exif/ExifCleanerView';
 import { ScreenshotStudioView } from '@/components/screenshot/ScreenshotStudioView';
 import { IDCopyStudioView } from '@/components/idcopy/IDCopyStudioView';
+import { JsonFormatterView } from '@/components/json/JsonFormatterView';
 import { DesktopDownloadModal } from '@/components/desktop/DesktopDownloadModal';
 import { useWatermarkStore } from '@/store/useWatermarkStore';
 import { exportSingleImage } from '@/utils/batchExporter';
@@ -111,6 +112,7 @@ export const App: React.FC = () => {
               {activeTab === 'exif' && <ExifCleanerView />}
               {activeTab === 'screenshot' && <ScreenshotStudioView />}
               {activeTab === 'id-copy' && <IDCopyStudioView />}
+              {activeTab === 'json-format' && <JsonFormatterView />}
               {activeTab === 'json-config' && <CodeMirrorConfigView />}
               {activeTab === 'about' && <AboutPrivacyView />}
             </main>
